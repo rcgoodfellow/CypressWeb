@@ -147,7 +147,6 @@ td {
     margin-left: 20px;
 }
 
-
 .exp_preview {
     width: 150px;
     height: 100px;
@@ -175,6 +174,15 @@ td {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.exp_new_editing {
+    font-size: 22px;
+    cursor: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 .exp_preview:hover {

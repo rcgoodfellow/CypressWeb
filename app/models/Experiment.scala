@@ -76,3 +76,5 @@ case class Experiment(name: String,
   def clink(a: Interface, b: Interface){ clinks += CLink(a, b) }
 }
 
+case class NewExp(name: String)
+

@@ -2,7 +2,9 @@
 
 <div id="experiments">
     <div id="display">
-        <div class="exp_preview exp_preview_new"> <span>New</span> </div>
+        <div class="exp_preview exp_preview_new" onclick="newExp()">
+            <span id="new_text" contenteditable="inherit">New</span>
+        </div>
         @for(exp <- user.experiments) {
             <div class="exp_preview">
                 <span>@exp.name</span>

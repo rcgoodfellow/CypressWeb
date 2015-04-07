@@ -3,7 +3,7 @@ package controllers
 import play.api.data.Form
 import play.api.data.Forms.{mapping, text, nonEmptyText}
 import play.api.mvc._
-import models.User
+import models.{Experiment, NewExp, User}
 
 
 object Application extends Controller {
@@ -13,6 +13,12 @@ object Application extends Controller {
       "name" -> text,
       "password" -> text
     )(User.apply)(User.unapply)
+  )
+
+  private val newExpForm: Form[NewExp] = Form(
+    mapping(
+      "name" -> text
+    )(NewExp.apply)(NewExp.unapply)
   )
 
   def index = Action {
@@ -29,4 +35,8 @@ object Application extends Controller {
     }
   }
 
+  def newExp = Action { implicit request =>
+    val form = newExpForm.bindFromRequest()
+    Ok(views.html.design(Experiment(form.get.name)))
+  }
 }
