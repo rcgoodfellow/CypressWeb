@@ -6,7 +6,7 @@
             <span id="new_text" contenteditable="inherit">New</span>
         </div>
         @for(exp <- user.experiments) {
-            <div class="exp_preview">
+            <div class="exp_preview" onclick="goDesign('@exp.name'')">
                 <span>@exp.name</span>
             </div>
         }

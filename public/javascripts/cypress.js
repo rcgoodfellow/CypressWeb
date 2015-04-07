@@ -4,8 +4,6 @@
  */
 
 function newExp() {
-
-    console.log("new experiment");
     $(".exp_preview_new")
         .attr("contenteditable", "true")
         .addClass("exp_new_editing")
@@ -15,11 +13,14 @@ function newExp() {
 function newExpKeyPrH(evt) {
     var x = evt.which || evt.keyCode;
     if(x == 13) {
-        $(".exp_preview_new")
-            .attr("contenteditable", "false")
+        var node = $(".exp_preview_new");
+        var expname = node[0].innerHTML.trim();
+
+        node.attr("contenteditable", "false")
             .removeClass("exp_new_editing")
             .removeAttr("onkeypress", "")
-            .removeClass("exp_preview_new");
+            .removeClass("exp_preview_new")
+            .attr("onclick", "goDesign('"+expname+"')");
 
         //$("#new_text").removeAttr("id");
 
@@ -30,4 +31,8 @@ function newExpKeyPrH(evt) {
                 "</div>"
         )
     }
+}
+
+function goDesign(name) {
+    console.log("goDesign - " + name);
 }
