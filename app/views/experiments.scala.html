@@ -6,7 +6,7 @@
             New
         </div>
         @for(exp <- user.experiments) {
-            <div class="exp_preview" onclick="goDesign('@exp.name'')">
+            <div class="exp_preview" onclick="goDesign('@exp.name')">
                 <span>@exp.name</span>
             </div>
         }

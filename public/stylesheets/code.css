@@ -1,0 +1,23 @@
+html {
+}
+
+body {
+    background-color: #747474;
+}
+
+#code {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 176px;
+}
+
+#console {
+    position: absolute;
+    height: 175px;
+    bottom: 0px;
+    right: 0px;
+    left: 0px;
+    background-color: #474747;
+}

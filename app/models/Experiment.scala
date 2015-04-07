@@ -78,3 +78,5 @@ case class Experiment(name: String,
 
 case class NewExp(name: String)
 
+case class UserExp(name: String)
+

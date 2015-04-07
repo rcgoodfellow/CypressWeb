@@ -3,10 +3,10 @@ package controllers
 import play.api.data.Form
 import play.api.data.Forms.{mapping, text, nonEmptyText}
 import play.api.mvc._
-import models.{Experiment, NewExp, User}
+import models._
 
 
-object Application extends Controller {
+object Application extends play.api.mvc.Controller {
 
   private val loginForm: Form[User] = Form(
     mapping(
@@ -19,6 +19,12 @@ object Application extends Controller {
     mapping(
       "name" -> text
     )(NewExp.apply)(NewExp.unapply)
+  )
+
+  private val userExpForm: Form[UserExp] = Form(
+    mapping(
+      "name" -> text
+    )(UserExp.apply)(UserExp.unapply)
   )
 
   def index = Action {
@@ -36,7 +42,47 @@ object Application extends Controller {
   }
 
   def newExp = Action { implicit request =>
+
     val form = newExpForm.bindFromRequest()
-    Ok(views.html.design(Experiment(form.get.name)))
+
+    val user = request.session.get("user").get
+    DB.experiments.get(user).get += Experiment(form.get.name)
+
+    Ok("Creating : " + form.get.name)
+  }
+
+  def designer = Action { implicit request =>
+    val form = newExpForm.bindFromRequest()
+    val user = request.session.get("user").get
+
+    val exp = DB.experiments.get(user).get.find(x => x.name == form.get.name)
+
+    exp match {
+      case Some(value) => Ok(views.html.design(value))
+      case None => NotFound(
+        "The experiment <b>"+form.get.name+"</b> does not seem to exist :("
+      )
+    }
+  }
+
+  def expView = Action { implicit request =>
+
+    Ok(views.html.experiments(User("ry", "muffins")))
+
+  }
+
+  def code = Action { implicit request =>
+
+    val form = userExpForm.bindFromRequest()
+    val user = request.session.get("user").get
+
+    val exp = DB.experiments.get(user).get.find(x => x.name == form.get.name)
+
+    exp match {
+      case Some(value) => Ok(views.html.code(value))
+      case None => NotFound(
+        "The experiment <b>"+form.get.name+"</b> does not seem to exist :("
+      )
+    }
   }
 }

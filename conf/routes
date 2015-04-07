@@ -12,3 +12,8 @@ POST        /login               controllers.Application.login
 
 POST        /newExp              controllers.Application.newExp
 
+GET         /designer            controllers.Application.designer
+
+GET         /experiments         controllers.Application.expView
+
+GET         /code                controllers.Application.code
