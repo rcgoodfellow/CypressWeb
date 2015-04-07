@@ -27,7 +27,7 @@ function newExpKeyPrH(evt) {
         $("#experiments").find("#display")
             .prepend(
                 "<div class='exp_preview exp_preview_new' onclick='newExp()'>"+
-                    "<span id='new_text' contenteditable='inherit'>New</span>"+
+                   "New"+
                 "</div>"
         )
     }
