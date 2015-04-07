@@ -1,0 +1,17 @@
+@(user: User)
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Cypress: @user.name</title>
+        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/tree.png")">
+        <script src="//use.typekit.net/jyb1hsj.js"></script>
+        <script>try{Typekit.load();}catch(e){}</script>
+    </head>
+    <body>
+        @topnav(user)
+        @experiments(user)
+    </body>
+</html>

@@ -1,0 +1,31 @@
+@(user: User)
+
+<div id="topnav">
+    <table id="nav_table">
+        <tr id="nav_row">
+            <td>
+                <div id="nav_logo">
+                    <table>
+                        <td><img id="logo" src="@routes.Assets.at("images/tree.png")" /></td>
+                        <td><span> Cypress </span></td>
+                    </table>
+                </div>
+            </td>
+            <td width="100%">
+                <table id="nav_link_table">
+                    <td>
+                        <span class="navlink navlink_selected">Experiments</span>
+                    </td>
+                    <td>
+                        <span class="navlink">Design</span>
+                    </td>
+                </table>
+            </td>
+            <td>
+                <div id="user_status">
+                    <span id="uname">@user.name</span>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>

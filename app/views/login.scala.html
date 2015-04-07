@@ -1,0 +1,42 @@
+@(loginForm: Form[User])
+
+@import helper._
+
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Cypress</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/tree.png")">
+        <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")" type="text/javascript"></script>
+        <script src="//use.typekit.net/jyb1hsj.js"></script>
+        <script>try{Typekit.load();}catch(e){}</script>
+    </head>
+    <body>
+        <div id="login">
+            <table id="logotable">
+                <tr>
+                    <td><img id="logo" src="@routes.Assets.at("images/tree.png")" /></td>
+                    <td><h1>Cypress</h1></td>
+                </tr>
+                <tr>
+                    <td colspan="2" id="udata_td">
+                        @helper.form(action = routes.Application.login()) {
+                            <input name="name" class="centered_text" type="text" placeholder="username" /> <br />
+                            <input name="password" class="centered_text" type="password" placeholder="password" /> <br/>
+                            <input type="submit" class="btn" value="login" />
+                        }
+                        <!--
+                        <form id="udata_form">
+                            <input class="centered_text" type="text" placeholder="username" /> <br />
+                            <input class="centered_text" type="password" placeholder="password" />
+                        </form>
+                        -->
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>
