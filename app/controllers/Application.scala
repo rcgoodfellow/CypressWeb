@@ -4,6 +4,7 @@ import play.api.data.Form
 import play.api.data.Forms.{mapping, text, nonEmptyText}
 import play.api.mvc._
 import models._
+import play.api.libs.json._
 
 
 object Application extends play.api.mvc.Controller {
@@ -26,6 +27,12 @@ object Application extends play.api.mvc.Controller {
       "name" -> text
     )(UserExp.apply)(UserExp.unapply)
   )
+
+  implicit val expWrites = new Writes[Experiment] {
+    def writes(exp: Experiment) = Json.obj(
+      "name" -> exp.name
+    )
+  }
 
   def index = Action {
     Ok(views.html.login(loginForm))
@@ -84,5 +91,24 @@ object Application extends play.api.mvc.Controller {
         "The experiment <b>"+form.get.name+"</b> does not seem to exist :("
       )
     }
+  }
+
+  def expData = Action { implicit request =>
+
+    val form = userExpForm.bindFromRequest()
+    val user = request.session.get("user").get
+
+    val exp = DB.experiments.get(user).get.find(x => x.name == form.get.name)
+
+    exp match {
+      case Some(value) => {
+        val js = Json.toJson(value)
+        Ok(Json.stringify(js))
+      }
+      case None => NotFound(
+        "The experiment <b>"+form.get.name+"</b> does not seem to exist :("
+      )
+    }
+
   }
 }

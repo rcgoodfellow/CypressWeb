@@ -17,3 +17,5 @@ GET         /designer            controllers.Application.designer
 GET         /experiments         controllers.Application.expView
 
 GET         /code                controllers.Application.code
+
+GET         /expdata             controllers.Application.expData

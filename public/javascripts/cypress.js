@@ -61,6 +61,12 @@ function goDesign(name) {
             }
         }
     );
+
+    $.get("expdata", {name: name},
+        function(data) {
+            $("#design_content").html(data.toString())
+        }
+    );
 }
 
 function expView() {
@@ -72,17 +78,6 @@ function expView() {
             $("#main_content").html(data);
         }
     );
-}
-
-function getCookie(cname) {
-    var name = cname + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0; i<ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1);
-        if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
-    }
-    return "";
 }
 
 function openCodeWindow(expname) {
