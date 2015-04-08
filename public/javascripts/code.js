@@ -3,6 +3,9 @@
  * Created by ry on 4/7/15.
  */
 
+var editor = {};
+var out_count = 0;
+
 function code_onload() {
 
     var code = document.getElementById("code");
@@ -23,5 +26,17 @@ function code_onload() {
 function mirror_eval() {
 
     console.log("Code Push!");
+
+    var source = editor.getValue();
+
+    $.post("eval", {source: source},
+        function(data) {
+            var cs = $("#console");
+            cs.append("<p>[" + out_count++ + "]:&nbsp;" +data+"</p>")
+            cs.scrollTop(cs.prop("scrollHeight"));
+            console.log(data);
+            window.updateModel(expname);
+        }
+    );
 
 }

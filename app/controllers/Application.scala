@@ -5,7 +5,12 @@ import play.api.data.Forms.{mapping, text, nonEmptyText}
 import play.api.mvc._
 import models._
 import play.api.libs.json._
+import scala.collection.mutable.{ListBuffer => L}
+import javax.script.ScriptEngineManager
+import play.api.Play.current
 
+
+class Thing
 
 object Application extends play.api.mvc.Controller {
 
@@ -28,9 +33,16 @@ object Application extends play.api.mvc.Controller {
     )(UserExp.apply)(UserExp.unapply)
   )
 
+  private val codeEvalForm: Form[CodeEval] = Form(
+    mapping(
+      "source" -> text
+    )(CodeEval.apply)(CodeEval.unapply)
+  )
+
   implicit val expWrites = new Writes[Experiment] {
     def writes(exp: Experiment) = Json.obj(
-      "name" -> exp.name
+      "name" -> exp.name,
+      "computers" -> exp.computers.map(x => Json.obj("name" -> x.name))
     )
   }
 
@@ -53,7 +65,9 @@ object Application extends play.api.mvc.Controller {
     val form = newExpForm.bindFromRequest()
 
     val user = request.session.get("user").get
-    DB.experiments.get(user).get += Experiment(form.get.name)
+    val exp = Experiment(form.get.name)
+    exp.computers += Computer(name="tc", os=L("Linux"))
+    DB.experiments.get(user).get += exp
 
     Ok("Creating : " + form.get.name)
   }
@@ -110,5 +124,22 @@ object Application extends play.api.mvc.Controller {
       )
     }
 
+  }
+
+
+  def eval = Action { implicit request =>
+
+    val form = codeEvalForm.bindFromRequest()
+    val user = request.session.get("user").get
+
+    val src = form.get.source
+    val E = new ScriptEngineManager().getEngineByName("scala")
+    val settings = E.asInstanceOf[scala.tools.nsc.interpreter.IMain].settings
+    settings.embeddedDefaults[Thing]
+    //settings.usejavacp.value = true
+
+    val eval_result = E.eval(src)
+
+    Ok("muffin")
   }
 }

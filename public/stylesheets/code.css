@@ -20,4 +20,11 @@ body {
     right: 0px;
     left: 0px;
     background-color: #474747;
+    font-size: 12px;
+    font-family: monospace;
+    overflow: scroll;
+}
+
+#console p {
+    padding-left: 5px;
 }

@@ -80,6 +80,18 @@ function expView() {
     );
 }
 
+function updateModelData(name) {
+    console.log("updating model data for "+  name);
+    $.get("expdata", {name: name},
+        function(data) {
+            $("#main_content").html(data);
+            if(!codeWindows[name]) {
+                openCodeWindow(name);
+            }
+        }
+    );
+}
+
 function openCodeWindow(expname) {
     var url  = "/code?"
         + "name=" + expname;
@@ -89,6 +101,7 @@ function openCodeWindow(expname) {
         "width=600, height=900";
 
     var win = window.open(url, expname + " :: code", winFeatures);
+    win.updateModel = updateModelData;
     codeWindows[expname] = win;
     win.onbeforeunload = function() {
         delete codeWindows[expname];
