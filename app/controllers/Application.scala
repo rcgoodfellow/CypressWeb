@@ -1,5 +1,7 @@
 package controllers
 
+import java.io.File
+
 import play.api.data.Form
 import play.api.data.Forms.{mapping, text, nonEmptyText}
 import play.api.mvc._
@@ -8,6 +10,8 @@ import play.api.libs.json._
 import scala.collection.mutable.{ListBuffer => L}
 import javax.script.ScriptEngineManager
 import play.api.Play.current
+
+import scala.util.Properties
 
 
 class Thing
@@ -135,11 +139,15 @@ object Application extends play.api.mvc.Controller {
     val src = form.get.source
     val E = new ScriptEngineManager().getEngineByName("scala")
     val settings = E.asInstanceOf[scala.tools.nsc.interpreter.IMain].settings
+    val cp =
+      scala.tools.util.PathResolver.Environment.javaBootClassPath +
+      File.pathSeparator + "lib/scala-library-2.11.1.jar"
+
+    settings.bootclasspath.value += cp
     settings.embeddedDefaults[Thing]
-    //settings.usejavacp.value = true
 
     val eval_result = E.eval(src)
 
-    Ok("muffin")
+    Ok(eval_result.toString)
   }
 }

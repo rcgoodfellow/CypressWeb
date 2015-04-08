@@ -2,6 +2,8 @@ name := "CypressWeb"
 
 version := "1.0"
 
+//fork := true
+
 lazy val `cypressweb` = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.1"
