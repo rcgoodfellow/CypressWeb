@@ -23,6 +23,7 @@ body {
     font-size: 12px;
     font-family: monospace;
     overflow: scroll;
+    white-space: pre-wrap;
 }
 
 #console p {

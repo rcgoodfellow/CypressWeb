@@ -1,6 +1,6 @@
 package controllers
 
-import java.io.File
+import java.io.{ByteArrayOutputStream, File}
 
 import play.api.data.Form
 import play.api.data.Forms.{mapping, text, nonEmptyText}
@@ -9,10 +9,6 @@ import models._
 import play.api.libs.json._
 import scala.collection.mutable.{ListBuffer => L}
 import javax.script.{ScriptException, ScriptEngineManager}
-import play.api.Play.current
-
-import scala.tools.nsc.interpreter.IMain
-import scala.util.Properties
 
 class Thing
 
@@ -144,35 +140,36 @@ object Application extends play.api.mvc.Controller {
   settings.bootclasspath.value += cp
   settings.embeddedDefaults[Thing]
   private val ctx = E.getContext;
-  private var cnt = 0;
-
 
   def eval = Action { implicit request =>
 
     val form = codeEvalForm.bindFromRequest()
     val user = request.session.get("user").get
 
-    val src = form.get.source
+    val src = form.get.source + ";";
 
     val exp = DB.experiments.get(user).get.find(x => x.name == form.get.exp).get
 
-    E.put("exp", exp)
+    E.eval("import models._", ctx)
+    E.put("_exp", exp)
+    E.eval("val exp = _exp.asInstanceOf[Experiment]", ctx)
+    E.eval("import scala.collection.mutable.{ListBuffer => L}", ctx)
 
-    try {
-      cnt = cnt+1;
-      println("Count: " + cnt)
-      val eval_result = E.eval(src, ctx)
-      if(eval_result != null) {
-        Ok(eval_result.toString)
+    val baos = new ByteArrayOutputStream
+    Console.withOut(baos) {
+      try {
+        val eval_result = E.eval(src, ctx)
+        if (eval_result != null) {
+          Ok(eval_result.toString)
+        }
+        else {
+          Ok(baos.toString("UTF-8"))
+        }
       }
-      else {
-        Ok("--")
+      catch {
+        case ex: ScriptException =>
+          Ok(baos.toString("UTF-8"))
       }
-
-    }
-    catch {
-      case ex : ScriptException =>
-        Ok(ex.toString)
     }
 
   }
