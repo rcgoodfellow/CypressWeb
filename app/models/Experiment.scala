@@ -80,4 +80,4 @@ case class NewExp(name: String)
 
 case class UserExp(name: String)
 
-case class CodeEval(source: String)
+case class CodeEval(source: String, exp: String)

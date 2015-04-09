@@ -8,13 +8,17 @@ import play.api.mvc._
 import models._
 import play.api.libs.json._
 import scala.collection.mutable.{ListBuffer => L}
-import javax.script.ScriptEngineManager
+import javax.script.{ScriptException, ScriptEngineManager}
 import play.api.Play.current
 
+import scala.tools.nsc.interpreter.IMain
 import scala.util.Properties
 
-
 class Thing
+
+object Alligator {
+  def chomp = "womp womp"
+}
 
 object Application extends play.api.mvc.Controller {
 
@@ -39,7 +43,8 @@ object Application extends play.api.mvc.Controller {
 
   private val codeEvalForm: Form[CodeEval] = Form(
     mapping(
-      "source" -> text
+      "source" -> text,
+      "exp" -> text
     )(CodeEval.apply)(CodeEval.unapply)
   )
 
@@ -130,6 +135,17 @@ object Application extends play.api.mvc.Controller {
 
   }
 
+  private val E = new ScriptEngineManager().getEngineByName("scala")
+  private val settings = E.asInstanceOf[scala.tools.nsc.interpreter.IMain].settings
+  private val cp =
+    scala.tools.util.PathResolver.Environment.javaBootClassPath +
+      File.pathSeparator + "lib/scala-library-2.11.1.jar" +
+      File.pathSeparator + "target/scala-2.11/cypressweb_2.11-1.0.jar"
+  settings.bootclasspath.value += cp
+  settings.embeddedDefaults[Thing]
+  private val ctx = E.getContext;
+  private var cnt = 0;
+
 
   def eval = Action { implicit request =>
 
@@ -137,17 +153,27 @@ object Application extends play.api.mvc.Controller {
     val user = request.session.get("user").get
 
     val src = form.get.source
-    val E = new ScriptEngineManager().getEngineByName("scala")
-    val settings = E.asInstanceOf[scala.tools.nsc.interpreter.IMain].settings
-    val cp =
-      scala.tools.util.PathResolver.Environment.javaBootClassPath +
-      File.pathSeparator + "lib/scala-library-2.11.1.jar"
 
-    settings.bootclasspath.value += cp
-    settings.embeddedDefaults[Thing]
+    val exp = DB.experiments.get(user).get.find(x => x.name == form.get.exp).get
 
-    val eval_result = E.eval(src)
+    E.put("exp", exp)
 
-    Ok(eval_result.toString)
+    try {
+      cnt = cnt+1;
+      println("Count: " + cnt)
+      val eval_result = E.eval(src, ctx)
+      if(eval_result != null) {
+        Ok(eval_result.toString)
+      }
+      else {
+        Ok("--")
+      }
+
+    }
+    catch {
+      case ex : ScriptException =>
+        Ok(ex.toString)
+    }
+
   }
 }

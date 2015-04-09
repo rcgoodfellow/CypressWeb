@@ -3,6 +3,7 @@ name := "CypressWeb"
 version := "1.0"
 
 //fork := true
+exportJars := true
 
 lazy val `cypressweb` = (project in file(".")).enablePlugins(PlayScala)
 

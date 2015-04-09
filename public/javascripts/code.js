@@ -29,7 +29,7 @@ function mirror_eval() {
 
     var source = editor.getValue();
 
-    $.post("eval", {source: source},
+    $.post("eval", {source: source, exp: expname},
         function(data) {
             var cs = $("#console");
             cs.append("<p>[" + out_count++ + "]:&nbsp;" +data+"</p>")
