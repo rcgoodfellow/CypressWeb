@@ -11,6 +11,7 @@ object DB {
   val experiments = Map[String, L[Experiment]](
     "ry" -> L[Experiment]()
   )
+
 }
 
 case class User(name: String, password: String) {

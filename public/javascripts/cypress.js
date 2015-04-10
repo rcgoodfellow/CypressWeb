@@ -4,8 +4,8 @@
  */
 
 var currentExp = "";
-
 var codeWindows = {};
+var exp_view = {};
 
 function newExp() {
     $(".exp_preview_new")
@@ -59,14 +59,18 @@ function goDesign(name) {
             if(!codeWindows[name]) {
                 openCodeWindow(name);
             }
+
+            $.get("expdata", {name: name},
+                function(data) {
+                    exp_view = data;
+                    //$("#design_content").html(data.toString())
+                    showViz();
+                }
+            );
+
         }
     );
 
-    $.get("expdata", {name: name},
-        function(data) {
-            $("#design_content").html(data.toString())
-        }
-    );
 }
 
 function expView() {
@@ -84,7 +88,7 @@ function updateModelData(name) {
     console.log("updating model data for "+  name);
     $.get("expdata", {name: name},
         function(data) {
-            $("#main_content").html(data);
+            //$("#main_content").html(data);
             if(!codeWindows[name]) {
                 openCodeWindow(name);
             }
@@ -98,7 +102,7 @@ function openCodeWindow(expname) {
 
     var winFeatures =
         "menubar=no, location=no, status=no, resizable=yes," +
-        "width=600, height=900";
+        "width=700, height=400";
 
     var win = window.open(url, expname + " :: code", winFeatures);
     win.updateModel = updateModelData;

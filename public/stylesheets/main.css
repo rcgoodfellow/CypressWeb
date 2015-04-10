@@ -195,3 +195,13 @@ td {
 
 .exp_preview_new span {
 }
+
+#design_content {
+    position: absolute;
+
+    top: 60px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    cursor: default;
+}

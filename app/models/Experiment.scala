@@ -62,18 +62,50 @@ case class Substrate(interfaces: L[Interface] = L[Interface]())
 }
 
 case class Experiment(name: String,
-  computers: L[Computer] = L[Computer](),
-  objects: L[PObject] = L[PObject](),
-  sensors: L[Sensor] = L[Sensor](),
-  actuators: L[Actuator] = L[Actuator](),
-  clinks: L[CLink] = L[CLink](),
-  plinks: L[PLink] = L[PLink](),
-  substrates: L[Substrate] = L[Substrate]()
+  computers:  L[Computer]   = L[Computer](),
+  objects:    L[PObject]    = L[PObject](),
+  sensors:    L[Sensor]     = L[Sensor](),
+  actuators:  L[Actuator]   = L[Actuator](),
+  clinks:     L[CLink]      = L[CLink](),
+  plinks:     L[PLink]      = L[PLink](),
+  substrates: L[Substrate]  = L[Substrate](),
+  views: L[ExperimentView] = L()
 ){
   def sensor(x: String) = sensors.find(s => s.name == x).get
   def actuator(x: String) = actuators.find(a => a.name == x).get
   def plink(a: Coupling, b: Coupling){ plinks += PLink(a, b) }
   def clink(a: Interface, b: Interface){ clinks += CLink(a, b) }
+}
+
+trait Cxy {
+  var x: Double
+  var y: Double
+}
+
+case class Coord(var x: Double, var y: Double) extends Cxy
+
+case class Extent(var x: Double, var y: Double) extends Cxy
+
+case class ExperimentView(name: String)
+{
+  val computers:  Map[Computer,  Cxy] = Map()
+  val objects:    Map[PObject,   Cxy] = Map()
+  val sensors:    Map[Sensor,    Cxy] = Map()
+  val actuators:  Map[Actuator,  Cxy] = Map()
+  val substrates: Map[Substrate, Cxy] = Map()
+
+  def all[T <: Cxy] = List(computers, objects)
+  def extent : Extent = {
+    val x =
+      all.map(l => l.values.minBy(a => a.x).x).min -
+      all.map(l => l.values.maxBy(a => a.x).x).max
+
+    val y =
+      all.map(l => l.values.minBy(a => a.y).y).min -
+      all.map(l => l.values.maxBy(a => a.y).y).max
+
+    Extent(x, y)
+  }
 }
 
 case class NewExp(name: String)

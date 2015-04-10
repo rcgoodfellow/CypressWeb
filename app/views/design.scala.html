@@ -1,5 +1,7 @@
 @(exp: Experiment)
 
-<div id="design_content">
-    Experiment Designer - @exp.name
+<script type="text/javascript" >
+   var expname = "@exp.name";
+</script>
+<div id="design_content" onmousedown="viz_mousedown(event)">
 </div>

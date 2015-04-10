@@ -51,6 +51,13 @@ object Application extends play.api.mvc.Controller {
     )
   }
 
+  //TODO: you are here
+  implicit val expViewWrites = new Writes[ExperimentView] {
+    def writes(exp: ExperimentView) = Json.obj(
+      "name" -> exp.name
+    )
+  }
+
   def index = Action {
     Ok(views.html.login(loginForm))
   }
@@ -112,6 +119,10 @@ object Application extends play.api.mvc.Controller {
     }
   }
 
+  /*
+    TODO: requestor should supply a view name so we can access that view and
+          give it back to them
+  */
   def expData = Action { implicit request =>
 
     val form = userExpForm.bindFromRequest()
@@ -121,7 +132,7 @@ object Application extends play.api.mvc.Controller {
 
     exp match {
       case Some(value) => {
-        val js = Json.toJson(value)
+        val js = Json.toJson(value.views(0))
         Ok(Json.stringify(js))
       }
       case None => NotFound(
