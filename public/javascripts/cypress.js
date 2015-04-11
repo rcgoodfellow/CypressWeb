@@ -36,7 +36,8 @@ function newExpKeyPrH(evt) {
 
         $.post("newExp", {name: expname},
             function(data){
-                console.log("newExp response - " + data)
+                console.log("newExp response")
+                console.log(data)
             }
         );
     }
@@ -60,11 +61,12 @@ function goDesign(name) {
                 openCodeWindow(name);
             }
 
-            $.get("expdata", {name: name},
+            $.get("expdata", {name: name, view: "default"},
                 function(data) {
                     exp_view = data;
                     //$("#design_content").html(data.toString())
                     showViz();
+                    console.log(exp_view);
                 }
             );
 
@@ -88,6 +90,9 @@ function updateModelData(name) {
     console.log("updating model data for "+  name);
     $.get("expdata", {name: name, view: "default"},
         function(data) {
+            exp_view = data;
+            console.log("model data:");
+            console.log(data);
             //$("#main_content").html(data);
             if(!codeWindows[name]) {
                 openCodeWindow(name);

@@ -7,7 +7,13 @@ package models
 
 import scala.collection.mutable.{ListBuffer => L}
 
-trait Software {
+case class Coord(var x: Double, var y: Double)
+
+trait VisualComponent {
+  var xy: Coord = Coord(0,0)
+}
+
+trait Software extends VisualComponent {
   val name: String
 }
 
@@ -18,7 +24,8 @@ case class Computer(
   os: L[String],
   software: L[Software] = L[Software](),
   interfaces: L[Interface] = L[Interface]()
-){
+) extends VisualComponent {
+
   def interface(x: String) = interfaces.find(x => x.name == x.name).get
 }
 
@@ -38,7 +45,7 @@ case class PLink(a: Coupling, b: Coupling)
 
 case class CLink(a: Interface, b: Interface)
 
-trait PObject{
+trait PObject extends VisualComponent{
   val name: String
   val couplings: L[Coupling] = L[Coupling]()
   def coupling(x: String) = couplings.find(c => c.x == x).get
@@ -62,13 +69,13 @@ case class Substrate(interfaces: L[Interface] = L[Interface]())
 }
 
 case class Experiment(name: String,
-  computers:  L[Computer]   = L[Computer](),
-  objects:    L[PObject]    = L[PObject](),
-  sensors:    L[Sensor]     = L[Sensor](),
-  actuators:  L[Actuator]   = L[Actuator](),
-  clinks:     L[CLink]      = L[CLink](),
-  plinks:     L[PLink]      = L[PLink](),
-  substrates: L[Substrate]  = L[Substrate](),
+  computers:  L[Computer]   = L(),
+  objects:    L[PObject]    = L(),
+  sensors:    L[Sensor]     = L(),
+  actuators:  L[Actuator]   = L(),
+  clinks:     L[CLink]      = L(),
+  plinks:     L[PLink]      = L(),
+  substrates: L[Substrate]  = L(),
   views: L[ExperimentView] = L()
 ){
   def sensor(x: String) = sensors.find(s => s.name == x).get
@@ -77,39 +84,33 @@ case class Experiment(name: String,
   def clink(a: Interface, b: Interface){ clinks += CLink(a, b) }
 }
 
-trait Cxy {
-  var x: Double
-  var y: Double
-}
 
-case class Coord(var x: Double, var y: Double) extends Cxy
 
-case class Extent(var x: Double, var y: Double) extends Cxy
+case class Extent(var x: Double, var y: Double)
 
-case class ExperimentView(name: String)
+
+case class ExperimentView(name: String, exp: Experiment)
 {
-  val computers:  Map[Computer,  Cxy] = Map()
-  val objects:    Map[PObject,   Cxy] = Map()
-  val sensors:    Map[Sensor,    Cxy] = Map()
-  val actuators:  Map[Actuator,  Cxy] = Map()
-  val substrates: Map[Substrate, Cxy] = Map()
+  override def toString: String = "ExperimentView"
 
-  def all[T <: Cxy] = List(computers, objects)
+  def computers : () => L[Computer] =
+    () => exp.computers
+
+  def objects : () => L[PObject] =
+    () => exp.objects
+
+  def visuals[T <: VisualComponent] = List(computers(), objects())
+
   def extent : Extent = {
     val x =
-      all.map(l => l.values.minBy(a => a.x).x).min -
-      all.map(l => l.values.maxBy(a => a.x).x).max
+      visuals.map(l => l.minBy(a => a.xy.x).xy.x).min -
+      visuals.map(l => l.maxBy(a => a.xy.x).xy.x).max
 
     val y =
-      all.map(l => l.values.minBy(a => a.y).y).min -
-      all.map(l => l.values.maxBy(a => a.y).y).max
+      visuals.map(l => l.minBy(a => a.xy.y).xy.y).min -
+      visuals.map(l => l.maxBy(a => a.xy.y).xy.y).max
 
     Extent(x, y)
   }
 }
 
-case class NewExp(name: String)
-
-case class UserExp(name: String, view: String)
-
-case class CodeEval(source: String, exp: String)

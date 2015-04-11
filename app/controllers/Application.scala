@@ -2,48 +2,19 @@ package controllers
 
 import java.io.{ByteArrayOutputStream, File}
 
-import play.api.data.Form
-import play.api.data.Forms.{mapping, text, nonEmptyText}
 import play.api.mvc._
 import models._
 import play.api.libs.json._
 import scala.collection.mutable.{ListBuffer => L}
 import javax.script.{ScriptException, ScriptEngineManager}
+import requests._
+import requests.Forms._
 
 class Thing
 
-object Alligator {
-  def chomp = "womp womp"
-}
-
 object Application extends play.api.mvc.Controller {
 
-  private val loginForm: Form[User] = Form(
-    mapping(
-      "name" -> text,
-      "password" -> text
-    )(User.apply)(User.unapply)
-  )
 
-  private val newExpForm: Form[NewExp] = Form(
-    mapping(
-      "name" -> text
-    )(NewExp.apply)(NewExp.unapply)
-  )
-
-  private val userExpForm: Form[UserExp] = Form(
-    mapping(
-      "name" -> text,
-      "view" -> text
-    )(UserExp.apply)(UserExp.unapply)
-  )
-
-  private val codeEvalForm: Form[CodeEval] = Form(
-    mapping(
-      "source" -> text,
-      "exp" -> text
-    )(CodeEval.apply)(CodeEval.unapply)
-  )
 
   implicit val expWrites = new Writes[Experiment] {
     def writes(exp: Experiment) = Json.obj(
@@ -55,7 +26,8 @@ object Application extends play.api.mvc.Controller {
   //TODO: you are here
   implicit val expViewWrites = new Writes[ExperimentView] {
     def writes(exp: ExperimentView) = Json.obj(
-      "name" -> exp.name
+      "name" -> exp.name,
+      "computers" -> exp.computers().map(x => Json.obj("name" -> x.name))
     )
   }
 
@@ -75,18 +47,19 @@ object Application extends play.api.mvc.Controller {
 
   def newExp = Action { implicit request =>
 
-    val form = newExpForm.bindFromRequest()
+    val form = expForm.bindFromRequest()
 
     val user = request.session.get("user").get
     val exp = Experiment(form.get.name)
-    exp.computers += Computer(name="tc", os=L("Linux"))
+    //exp.computers += Computer(name="tc", os=L("Linux"))
+    exp.views += ExperimentView("default", exp)
     DB.experiments.get(user).get += exp
 
     Ok("Creating : " + form.get.name)
   }
 
   def designer = Action { implicit request =>
-    val form = newExpForm.bindFromRequest()
+    val form = expForm.bindFromRequest()
     val user = request.session.get("user").get
 
     val exp = DB.experiments.get(user).get.find(x => x.name == form.get.name)
@@ -107,7 +80,7 @@ object Application extends play.api.mvc.Controller {
 
   def code = Action { implicit request =>
 
-    val form = userExpForm.bindFromRequest()
+    val form = expForm.bindFromRequest()
     val user = request.session.get("user").get
 
     val exp = DB.experiments.get(user).get.find(x => x.name == form.get.name)
@@ -126,22 +99,9 @@ object Application extends play.api.mvc.Controller {
   */
   def expData = Action { implicit request =>
 
-    val form_binding = userExpForm.bindFromRequest()
-
+    val form = viewForm.bindFromRequest()
     val user = request.session.get("user").get
 
-    val rq = Working(form_binding.value)
-
-
-    rq flatMap {
-      case Some(frm) => Working(new {val form = frm})
-      case None => Dead(BadRequest(""))
-    }
-
-
-    Ok("die")
-
-/*
     form.value match {
       case Some(frm) =>
         DB.experiments.get(user) match {
@@ -158,7 +118,6 @@ object Application extends play.api.mvc.Controller {
           case None => NotFound("The user <b>"+user+"</b> does not seemt o exist :(") }
       case None => BadRequest("Malformed Request")
     }
-    */
 
   }
 
@@ -171,20 +130,20 @@ object Application extends play.api.mvc.Controller {
   settings.bootclasspath.value += cp
   settings.embeddedDefaults[Thing]
   private val ctx = E.getContext;
+  E.eval("import models._", ctx)
+  E.eval("import scala.collection.mutable.{ListBuffer => L}", ctx)
 
   def eval = Action { implicit request =>
 
-    val form = codeEvalForm.bindFromRequest()
+    val form = codeForm.bindFromRequest()
     val user = request.session.get("user").get
 
-    val src = form.get.source + ";";
+    val src = form.get.source + ";"
 
     val exp = DB.experiments.get(user).get.find(x => x.name == form.get.exp).get
-
-    E.eval("import models._", ctx)
     E.put("_exp", exp)
     E.eval("val exp = _exp.asInstanceOf[Experiment]", ctx)
-    E.eval("import scala.collection.mutable.{ListBuffer => L}", ctx)
+
 
     val baos = new ByteArrayOutputStream
     Console.withOut(baos) {
