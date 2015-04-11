@@ -110,6 +110,6 @@ case class ExperimentView(name: String)
 
 case class NewExp(name: String)
 
-case class UserExp(name: String)
+case class UserExp(name: String, view: String)
 
 case class CodeEval(source: String, exp: String)

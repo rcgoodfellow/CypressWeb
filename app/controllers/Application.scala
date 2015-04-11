@@ -33,7 +33,8 @@ object Application extends play.api.mvc.Controller {
 
   private val userExpForm: Form[UserExp] = Form(
     mapping(
-      "name" -> text
+      "name" -> text,
+      "view" -> text
     )(UserExp.apply)(UserExp.unapply)
   )
 
@@ -125,20 +126,39 @@ object Application extends play.api.mvc.Controller {
   */
   def expData = Action { implicit request =>
 
-    val form = userExpForm.bindFromRequest()
+    val form_binding = userExpForm.bindFromRequest()
+
     val user = request.session.get("user").get
 
-    val exp = DB.experiments.get(user).get.find(x => x.name == form.get.name)
+    val rq = Working(form_binding.value)
 
-    exp match {
-      case Some(value) => {
-        val js = Json.toJson(value.views(0))
-        Ok(Json.stringify(js))
-      }
-      case None => NotFound(
-        "The experiment <b>"+form.get.name+"</b> does not seem to exist :("
-      )
+
+    rq flatMap {
+      case Some(frm) => Working(new {val form = frm})
+      case None => Dead(BadRequest(""))
     }
+
+
+    Ok("die")
+
+/*
+    form.value match {
+      case Some(frm) =>
+        DB.experiments.get(user) match {
+          case Some(user_data) =>
+            user_data.find(x => x.name == frm.name) match {
+              case Some(exp) =>
+                exp.views.find(x => x.name == frm.view) match {
+                  case Some(view) => Ok(Json.toJson(view))
+                  case None => NotFound(
+                    "The view <b>" + form.get.view + "</b> does not seem to exist " +
+                      "for the experiment <b>" + frm.name + "</b>"); }
+              case None => NotFound(
+                "The experiment <b>" + frm.name + "</b> does not seem to exist :(" ) }
+          case None => NotFound("The user <b>"+user+"</b> does not seemt o exist :(") }
+      case None => BadRequest("Malformed Request")
+    }
+    */
 
   }
 

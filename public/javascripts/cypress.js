@@ -86,7 +86,7 @@ function expView() {
 
 function updateModelData(name) {
     console.log("updating model data for "+  name);
-    $.get("expdata", {name: name},
+    $.get("expdata", {name: name, view: "default"},
         function(data) {
             //$("#main_content").html(data);
             if(!codeWindows[name]) {
