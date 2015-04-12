@@ -67,12 +67,12 @@ function goDesign(name) {
                     //$("#design_content").html(data.toString())
                     showViz();
                     console.log(exp_view);
+                    drawModel();
                 }
             );
 
         }
     );
-
 }
 
 function expView() {
@@ -93,12 +93,23 @@ function updateModelData(name) {
             exp_view = data;
             console.log("model data:");
             console.log(data);
-            //$("#main_content").html(data);
+            drawModel();
             if(!codeWindows[name]) {
                 openCodeWindow(name);
             }
         }
     );
+}
+
+function drawModel() {
+    clearVizTree();
+    if(typeof exp_view.computers !== 'undefined') {
+        for (var i = 0; i < exp_view.computers.length; i++) {
+            var c = exp_view.computers[i];
+            console.log("Drawing computer: " + c.name);
+            drawComputer(c);
+        }
+    }
 }
 
 function openCodeWindow(expname) {

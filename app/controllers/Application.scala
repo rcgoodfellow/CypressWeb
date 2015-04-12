@@ -14,8 +14,6 @@ class Thing
 
 object Application extends play.api.mvc.Controller {
 
-
-
   implicit val expWrites = new Writes[Experiment] {
     def writes(exp: Experiment) = Json.obj(
       "name" -> exp.name,
@@ -23,11 +21,24 @@ object Application extends play.api.mvc.Controller {
     )
   }
 
-  //TODO: you are here
+  implicit val coordWrites = new Writes[Coord] {
+    def writes(c: Coord) = Json.obj(
+      "x" -> c.x,
+      "y" -> c.y
+    )
+  }
+
+  implicit val compWrites = new Writes[Computer] {
+    def writes(c: Computer) = Json.obj(
+      "name" -> c.name,
+      "xy" -> Json.toJson(c.xy)
+    )
+  }
+
   implicit val expViewWrites = new Writes[ExperimentView] {
     def writes(exp: ExperimentView) = Json.obj(
       "name" -> exp.name,
-      "computers" -> exp.computers().map(x => Json.obj("name" -> x.name))
+      "computers" -> exp.computers().map(c => Json.toJson(c))
     )
   }
 
@@ -51,7 +62,6 @@ object Application extends play.api.mvc.Controller {
 
     val user = request.session.get("user").get
     val exp = Experiment(form.get.name)
-    //exp.computers += Computer(name="tc", os=L("Linux"))
     exp.views += ExperimentView("default", exp)
     DB.experiments.get(user).get += exp
 
@@ -93,10 +103,6 @@ object Application extends play.api.mvc.Controller {
     }
   }
 
-  /*
-    TODO: requestor should supply a view name so we can access that view and
-          give it back to them
-  */
   def expData = Action { implicit request =>
 
     val form = viewForm.bindFromRequest()

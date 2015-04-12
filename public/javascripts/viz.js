@@ -12,6 +12,9 @@ var scene = {},
     mouse = new THREE.Vector2(),
     baseplane = {};
 
+var baseG = new THREE.Group(),
+    compG = new THREE.Group();
+
 function showViz() {
 
     container = document.getElementById("design_content");
@@ -44,8 +47,27 @@ function showViz() {
     scene.add(box);
     */
 
+    baseG.add(compG);
+    scene.add(baseG);
+
     camera.position.z = 100;
 
+    render();
+}
+
+function clearVizTree() {
+    compG.children = [];
+}
+
+function drawComputer(c) {
+    var x = new THREE.Mesh(
+        new THREE.PlaneGeometry(10,10),
+        new THREE.MeshBasicMaterial({color: 0x004477})
+    );
+    x.position.x = c.xy.x;
+    x.position.y = c.xy.y;
+    x.info = c;
+    compG.add(x);
     render();
 }
 
@@ -64,7 +86,7 @@ function viz_mousedown(event) {
     updateCoords(event);
 
     raycaster.setFromCamera(mouse, camera);
-    var ixs = raycaster.intersectObjects(scene.children);
+    var ixs = raycaster.intersectObjects(compG.children);
 
     if(ixs.length > 0) {
         selected = ixs[0];
