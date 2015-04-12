@@ -27,6 +27,13 @@ case class Computer(
 ) extends VisualComponent {
 
   def interface(x: String) = interfaces.find(x => x.name == x.name).get
+
+  override def toString() = {
+    "name: " + name + "\n" +
+    "os: " + os.mkString("[",",","]") + "\n" +
+    "software: " + software.mkString("[",",","]") + "\n" +
+    "interfaces: " + interfaces.mkString("[",",","]")
+  }
 }
 
 trait CodeGen

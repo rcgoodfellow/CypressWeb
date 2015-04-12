@@ -32,7 +32,13 @@ function mirror_eval() {
     $.post("eval", {source: source, exp: expname},
         function(data) {
             var cs = $("#console");
-            cs.append("<p>[" + out_count++ + "]:&nbsp;" +data+"</p>")
+            cs.append(
+                "<div class='codeout'>"+
+                    "<table><tr>"+
+                        "<td><div class='ccl'>[" + out_count++ + "]:</div></td>"+
+                        "<td><div class='cc'>"+data+"</div></td>" +
+                    "</tr></table>"+
+                "</div>");
             cs.scrollTop(cs.prop("scrollHeight"));
             console.log(data);
             window.updateModel(expname);

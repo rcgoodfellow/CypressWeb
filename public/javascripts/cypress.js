@@ -30,9 +30,8 @@ function newExpKeyPrH(evt) {
         $("#experiments").find("#display")
             .prepend(
                 "<div class='exp_preview exp_preview_new' onclick='newExp()'>"+
-                   "New"+
-                "</div>"
-        )
+                  "New" +
+                "</div>");
 
         $.post("newExp", {name: expname},
             function(data){

@@ -28,5 +28,32 @@ body {
 
 #console p {
     padding-left: 5px;
-    color: whitesmoke;
+    color: #2a2a2a;
+}
+
+.codeout {
+    margin: 5px;
+    display: block;
+    position: relative;
+    overflow-x: scroll;
+    background-color: #bbb;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border-color: #595959;
+    border-width: 3px;
+}
+
+.cc {
+    display: inline-block;
+    color: #2a2a2a;
+    overflow-x: scroll;
+}
+
+.ccl {
+    display: inline-block;
+    font-weight: 400;
+    color: #36502D;
+    overflow-x: scroll;
+    margin: 5px;
 }
