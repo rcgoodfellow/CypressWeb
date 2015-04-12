@@ -80,6 +80,17 @@ function updateCoords(event) {
     mouse.y = -(event.layerY / container.offsetHeight) * 2 + 1;
 }
 
+function updateObjectXY(type, name, x, y) {
+
+    console.log(
+        "Updating object of type: " + type +
+            " with name: " + name +
+            " to coordinates (" + x + "," + y + ")"
+    )
+
+    $.post("updateXY", {type: type, name: name, x: x, y: y, exp: expname})
+
+}
 
 function viz_mousedown(event) {
 
@@ -96,6 +107,13 @@ function viz_mousedown(event) {
         container.onmousemove = function(moveE) {
 
             container.onmouseup = function() {
+                updateCoords(moveE);
+                raycaster.setFromCamera(mouse, camera);
+                var ixs = raycaster.intersectObject(baseplane);
+
+                updateObjectXY("computer", selected.object.info.name,
+                    ixs[0].point.x, ixs[0].point.y);
+
                 container.onmousemove = null;
                 container.onmouseup = null;
             };

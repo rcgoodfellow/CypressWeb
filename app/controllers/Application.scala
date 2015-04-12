@@ -169,4 +169,23 @@ object Application extends play.api.mvc.Controller {
     }
 
   }
+
+  def updateXY = Action { implicit request =>
+
+    val form = visualUpdateForm.bindFromRequest()
+    val user = request.session.get("user").get
+
+    val fdata = form.get
+    val exp = DB.experiments.get(user).get.find(x => x.name == form.get.exp).get
+
+    if(fdata.typ == "computer") {
+      val comp = exp.computers.find(c => c.name == fdata.name)
+      comp.foreach(c => {
+        c.xy.x = fdata.x
+        c.xy.y = fdata.y
+      })
+    }
+
+    Ok("")
+  }
 }

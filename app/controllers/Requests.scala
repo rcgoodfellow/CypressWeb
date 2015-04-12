@@ -6,8 +6,9 @@ package controllers.requests
  */
 
 import play.api.data.Form
-import play.api.data.Forms.{mapping, text, nonEmptyText}
+import play.api.data.Forms.{mapping, text, of}
 import models.User
+import play.api.data.format.Formats._
 
 case class Exp(name: String)
 
@@ -15,7 +16,19 @@ case class View(name: String, view: String)
 
 case class Code(source: String, exp: String)
 
+case class VisualUpdate(typ: String, name: String, x: Double, y: Double, exp: String)
+
 object Forms {
+
+  val visualUpdateForm: Form[VisualUpdate] = Form(
+    mapping(
+      "type" -> text,
+      "name" -> text,
+      "x" -> of(doubleFormat),
+      "y" -> of(doubleFormat),
+      "exp" -> text
+    )(VisualUpdate.apply)(VisualUpdate.unapply)
+  )
 
   val loginForm: Form[User] = Form(
     mapping(

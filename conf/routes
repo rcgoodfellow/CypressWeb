@@ -21,3 +21,5 @@ GET         /code                controllers.Application.code
 GET         /expdata             controllers.Application.expData
 
 POST        /eval                controllers.Application.eval
+
+POST        /updateXY            controllers.Application.updateXY
