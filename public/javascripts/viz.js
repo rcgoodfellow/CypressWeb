@@ -63,7 +63,8 @@ function getPath(n) {
     if(typeof n.kind === 'undefined') return [];
 
     var p = [{kind: n.kind, name: n.info.name}];
-    if(n.parent && n.parent.kind) {
+    if(typeof n.parent !== 'undefined' &&
+       typeof n.parent.kind !== 'undefined') {
         p = getPath(n.parent).concat(p)
     }
     return p;
@@ -136,9 +137,15 @@ function updateCoords(event) {
     mouse.y = -(event.layerY / container.offsetHeight) * 2 + 1;
 }
 
-function updateObjectXY(path, name, x, y) {
+function updateObjectXY(path, x, y) {
 
-    $.post("updateXY", {path: path, x: x, y: y, exp: expname})
+    $.ajax({
+        type: "POST",
+        url: "/updateXY",
+        data: JSON.stringify({path: path, x: x, y: y, exp: expname}),
+        contentType: "application/json",
+        dataType: "json"
+    });
 
 }
 
@@ -157,15 +164,15 @@ function viz_mousedown(event) {
 
         var off = {x: 0, y:0};
         if(selected.object.kind === ObjKind.Interface) {
-            off.x = selected.object.comp.position.x;
-            off.y = selected.object.comp.position.y;
+            off.x = selected.object.parent.position.x;
+            off.y = selected.object.parent.position.y;
         }
 
         container.onmouseup = function() {
 
             var obj = selected.object;
-            updateObjectXY(getPath(obj),
-                obj.info.name, obj.position.x, obj.position.y);
+            var pth = getPath(obj);
+            updateObjectXY(pth, obj.position.x, obj.position.y);
 
             container.onmousemove = null;
             container.onmouseup = null;

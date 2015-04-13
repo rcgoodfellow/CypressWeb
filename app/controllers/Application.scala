@@ -5,10 +5,14 @@ import java.io.{ByteArrayOutputStream, File}
 import play.api.mvc._
 import models._
 import play.api.libs.json._
+import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer => L}
 import javax.script.{ScriptException, ScriptEngineManager}
 import requests._
 import requests.Forms._
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 class Thing
 
@@ -55,6 +59,18 @@ object Application extends play.api.mvc.Controller {
       "computers" -> exp.computers().map(c => Json.toJson(c))
     )
   }
+
+  implicit val pathElementsReads : Reads[PathElement] = (
+    (JsPath \ "kind").read[Int] and
+    (JsPath \ "name").read[String]
+  )(PathElement.apply _)
+
+  implicit val visualUpdateReads : Reads[VisualUpdate] = (
+    (JsPath \ "path").read[List[PathElement]] and
+    (JsPath \ "x").read[Double] and
+    (JsPath \ "y").read[Double] and
+    (JsPath \ "exp").read[String]
+  )(VisualUpdate.apply _)
 
   def index = Action {
     Ok(views.html.login(loginForm))
@@ -184,21 +200,53 @@ object Application extends play.api.mvc.Controller {
 
   }
 
+  def findExpObject(o: PathElement, os: List[PathElement], exp: Experiment)
+    : VisualComponent = {
+     o.kind match {
+       case Kinds.COMPUTER =>
+         val c = exp.computers.find(x => o.name == x.name).get
+         if(os.nonEmpty) {
+           val x :: xs = os
+           findComputerObject(x, xs, c)
+         }
+         else c
+     }
+  }
+
+  def findComputerObject(o: PathElement, os: List[PathElement], c: Computer)
+  : VisualComponent = {
+    o.kind match {
+      case Kinds.INTERFACE =>
+        c.interface(o.name)
+    }
+  }
+
   def updateXY = Action { implicit request =>
 
-    val form = visualUpdateForm.bindFromRequest()
+    //val form = visualUpdateForm.bindFromRequest()
     val user = request.session.get("user").get
 
-    val fdata = form.get
-    val exp = DB.experiments.get(user).get.find(x => x.name == form.get.exp).get
+    val vup = Json.fromJson[VisualUpdate](request.body.asJson.get).get
 
-    if(fdata.path.last.kind == "computer") {
-      val comp = exp.computers.find(c => c.name == fdata.path.last.name)
+    //val fdata = form.get
+    val exp = DB.experiments.get(user).get.find(x => x.name == vup.exp).get
+
+    val p::ps = vup.path
+
+    val vobj = findExpObject(p, ps, exp)
+
+    vobj.xy = CartesianCoord(vup.x, vup.y)
+
+    /*
+    if(vup.path.last.kind == Kinds.COMPUTER) {
+      val comp = exp.computers.find(c => c.name == vup.path.last.name)
       comp.foreach(c => {
-        c.xy.x = fdata.x
-        c.xy.y = fdata.y
+        c.xy.x = vup.x
+        c.xy.y = vup.y
       })
     }
+    */
+
 
     Ok("")
   }

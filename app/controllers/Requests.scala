@@ -6,7 +6,7 @@ package controllers.requests
  */
 
 import play.api.data.Form
-import play.api.data.Forms.{mapping, text, of, list, seq}
+import play.api.data.Forms.{mapping, text, of, list, number}
 import models.User
 import play.api.data.format.Formats._
 
@@ -17,11 +17,11 @@ case class View(name: String, view: String)
 case class Code(source: String, exp: String)
 
 object Kinds {
-  val COMPUTER = 0
-  val INTERFACE = 1
+  val COMPUTER:Int = 0
+  val INTERFACE:Int = 1
 }
 
-case class PathElement(kind: String, name: String)
+case class PathElement(kind: Int, name: String)
 case class VisualUpdate(path: List[PathElement], x: Double, y: Double, exp: String)
 
 object Forms {
@@ -30,7 +30,7 @@ object Forms {
     mapping(
       "path" -> list[PathElement](
         mapping(
-          "kind" -> text,
+          "kind" -> number,
           "name" -> text
         )(PathElement.apply)(PathElement.unapply)
       ),
