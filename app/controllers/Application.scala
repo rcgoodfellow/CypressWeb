@@ -18,12 +18,14 @@ class Thing
 
 object Application extends play.api.mvc.Controller {
 
+  /*
   implicit val expWrites = new Writes[Experiment] {
     def writes(exp: Experiment) = Json.obj(
       "name" -> exp.name,
       "computers" -> exp.computers.map(x => Json.obj("name" -> x.name))
     )
   }
+  */
 
   implicit val ccoordWrites = new Writes[CartesianCoord] {
     def writes(c: CartesianCoord) = Json.obj(
@@ -41,7 +43,8 @@ object Application extends play.api.mvc.Controller {
   implicit val interfaceWrites = new Writes[Interface] {
     def writes(i: Interface) = Json.obj(
       "name" -> i.name,
-      "xy" -> Json.toJson(i.xy)
+      "xy" -> Json.toJson(i.xy),
+      "substrates" -> i.substrates.map(x => x.name)
     )
   }
 
@@ -53,10 +56,26 @@ object Application extends play.api.mvc.Controller {
     )
   }
 
+  implicit val pathElementWrites = new Writes[PathElement] {
+    def writes(p: PathElement) = Json.obj(
+      "kind" -> p.kind,
+      "name" -> p.name
+    )
+  }
+
+  implicit val substrateWrites = new Writes[Substrate] {
+    def writes(s: Substrate) = Json.obj(
+      "name" -> s.name,
+      "xy" -> Json.toJson(s.xy),
+      "interfaces" -> s.interfaces.map(_.getPath.map(x => Json.toJson(x)))
+    )
+  }
+
   implicit val expViewWrites = new Writes[ExperimentView] {
     def writes(exp: ExperimentView) = Json.obj(
       "name" -> exp.name,
-      "computers" -> exp.computers().map(c => Json.toJson(c))
+      "computers" -> exp.computers().map(c => Json.toJson(c)),
+      "substrates" -> exp.substrates().map(s => Json.toJson(s))
     )
   }
 
@@ -210,6 +229,9 @@ object Application extends play.api.mvc.Controller {
            findComputerObject(x, xs, c)
          }
          else c
+
+       case Kinds.SUBSTRATE =>
+         exp.substrates.find(x => o.name == x.name).get
      }
   }
 

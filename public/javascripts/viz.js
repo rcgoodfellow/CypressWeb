@@ -14,11 +14,15 @@ var scene = {},
 
 var ObjKind = {
     Computer: 0,
-    Interface: 1
+    Interface: 1,
+    Actuator: 2,
+    Sensor: 3,
+    Substrate: 4
 };
 
 var baseG = new THREE.Group(),
-    compG = new THREE.Group();
+    compG = new THREE.Group(),
+    subsG = new THREE.Group();
 
 function showViz() {
 
@@ -35,7 +39,7 @@ function showViz() {
             1,
             1000 );
 
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({antialiasing: true});
     renderer.setSize(container.offsetWidth, container.offsetHeight);
     renderer.setClearColor(0x747474);
     container.appendChild(renderer.domElement);
@@ -48,6 +52,7 @@ function showViz() {
     scene.add(baseplane);
 
     baseG.add(compG);
+    baseG.add(subsG);
     scene.add(baseG);
 
     camera.position.z = 100;
@@ -57,6 +62,7 @@ function showViz() {
 
 function clearVizTree() {
     compG.children = [];
+    subsG.children = [];
 }
 
 function getPath(n) {
@@ -128,6 +134,36 @@ function drawComputer(c) {
     render();
 }
 
+function drawSubstrate(s) {
+    var inner_radius = 17,
+        outer_radius = 20,
+        segments = 64,
+        outer_color = 0xCCCCCC,
+        inner_color = 0x004477;
+
+    var x = new THREE.Mesh(
+        new THREE.CircleGeometry(outer_radius, segments),
+        new THREE.MeshBasicMaterial({color: outer_color})
+    );
+
+    x.position.x = s.xy.x;
+    x.position.y = s.xy.y;
+    x.info = s;
+    x.kind = ObjKind.Substrate;
+    /*
+    var y = new THREE.Mesh(
+        new THREE.CircleGeometry(inner_radius, segments),
+        new THREE.MeshBasicMaterial({color: inner_color})
+    );
+    y.position.z = 1;
+    y.
+    x.add(y);
+    */
+
+    subsG.add(x);
+    render();
+}
+
 function render() {
     renderer.render(scene, camera);
 }
@@ -154,13 +190,13 @@ function viz_mousedown(event) {
     updateCoords(event);
 
     raycaster.setFromCamera(mouse, camera);
-    var ixs = raycaster.intersectObjects(compG.children, true);
+    var ixs = raycaster.intersectObjects(baseG.children, true);
 
     if(ixs.length > 0) {
         selected = ixs[0];
         if(selected.object === baseplane) return;
-        console.log(selected.object.info.name);
-        console.log(selected);
+        //console.log(selected.object.info.name);
+        //console.log(selected);
 
         var off = {x: 0, y:0};
         if(selected.object.kind === ObjKind.Interface) {

@@ -5,7 +5,17 @@ package models
  * Created by ry on 4/6/15.
  */
 
+import controllers.requests.{PathElement}
+
 import scala.collection.mutable.{ListBuffer => L}
+
+object Kinds {
+  val COMPUTER:Int = 0
+  val INTERFACE:Int = 1
+  val ACTUATOR:Int = 2
+  val SENSOR: Int = 3
+  val SUBSTRATE: Int = 4
+}
 
 case class CartesianCoord(var x: Double, var y: Double)
 case class RadialCoord(var theta: Double)
@@ -18,16 +28,38 @@ trait Software extends VisualComponent {
   val name: String
 }
 
-case class Interface(name: String) extends VisualComponent {
+case class Interface(name: String, host: Host) extends VisualComponent {
+  val substrates = L[Substrate]()
   xy = CartesianCoord(15,0)
+
+  override def toString = {
+    "name: " + name + "\n" +
+    "substrates: " + substrates.map(_.name).mkString("[",",","]") + "\n" +
+    "host: " + host.name + "\n"
+  }
+
+  def getPath : List[PathElement] = List(
+    PathElement(Kinds.COMPUTER, host.name),
+    PathElement(Kinds.INTERFACE, name)
+  )
+}
+
+trait Host {
+  var name: String
+  val os: L[String]
+  val software: L[Software]
+  val interfaces: L[Interface]
+  val kind: Int
 }
 
 case class Computer(
   var name: String,
-  os: L[String],
+  os: L[String] = L("linux"),
   software: L[Software] = L[Software](),
   interfaces: L[Interface] = L[Interface]()
-) extends VisualComponent {
+) extends Host with VisualComponent {
+
+  val kind = Kinds.COMPUTER
 
   def interface(x: String) = interfaces.find(x => x.name == x.name).get
 
@@ -62,18 +94,29 @@ trait PObject extends VisualComponent{
 }
 
 case class Actuator(
-  name: String,
-  coupling : Coupling = Coupling("out"),
-  interface : Interface = Interface("in")
-)
+  var name: String,
+  coupling : Coupling = Coupling("out")
+) extends Host
+{
+  val kind = Kinds.ACTUATOR
+  val interfaces = L(Interface("in", this))
+  val software = L[Software]()
+  val os = L[String]("embedded")
+}
 
 case class Sensor(
-  name: String,
-  coupling : Coupling = Coupling("in"),
-  interface : Interface = Interface("out")
-)
+  var name: String,
+  coupling : Coupling = Coupling("in")
+) extends Host
+{
+  val kind = Kinds.SENSOR
+  val interfaces = L(Interface("out", this))
+  val software = L[Software]()
+  val os = L("embedded")
+}
 
-case class Substrate(interfaces: L[Interface] = L[Interface]())
+case class Substrate(name: String, interfaces: L[Interface] = L[Interface]())
+  extends VisualComponent
 {
   def interface(x: String) = interfaces.find(i => i.name == x).get
 }
@@ -109,7 +152,10 @@ case class ExperimentView(name: String, exp: Experiment)
   def objects : () => L[PObject] =
     () => exp.objects
 
-  def visuals[T <: VisualComponent] = List(computers(), objects())
+  def substrates : () => L[Substrate] =
+    () => exp.substrates
+
+  def visuals[T <: VisualComponent] = List(computers(), objects(), substrates())
 
   def extent : Extent = {
     val x =
