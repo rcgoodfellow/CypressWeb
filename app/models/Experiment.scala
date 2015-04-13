@@ -7,17 +7,22 @@ package models
 
 import scala.collection.mutable.{ListBuffer => L}
 
-case class Coord(var x: Double, var y: Double)
+case class CartesianCoord(var x: Double, var y: Double)
+case class RadialCoord(var theta: Double)
 
 trait VisualComponent {
-  var xy: Coord = Coord(0,0)
+  var xy: CartesianCoord = CartesianCoord(0,0)
+}
+
+trait Connector {
+  var r: RadialCoord = RadialCoord(0)
 }
 
 trait Software extends VisualComponent {
   val name: String
 }
 
-case class Interface(name: String)
+case class Interface(name: String) extends Connector
 
 case class Computer(
   name: String,
@@ -28,7 +33,7 @@ case class Computer(
 
   def interface(x: String) = interfaces.find(x => x.name == x.name).get
 
-  override def toString() = {
+  override def toString = {
     "name: " + name + "\n" +
     "os: " + os.mkString("[",",","]") + "\n" +
     "software: " + software.mkString("[",",","]") + "\n" +

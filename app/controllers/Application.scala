@@ -21,17 +21,31 @@ object Application extends play.api.mvc.Controller {
     )
   }
 
-  implicit val coordWrites = new Writes[Coord] {
-    def writes(c: Coord) = Json.obj(
+  implicit val ccoordWrites = new Writes[CartesianCoord] {
+    def writes(c: CartesianCoord) = Json.obj(
       "x" -> c.x,
       "y" -> c.y
+    )
+  }
+  
+  implicit val rcoordWrites = new Writes[RadialCoord] {
+    def writes(r: RadialCoord) = Json.obj(
+      "theta" -> r.theta
+    )
+  }
+
+  implicit val interfaceWrites = new Writes[Interface] {
+    def writes(i: Interface) = Json.obj(
+      "name" -> i.name,
+      "r" -> Json.toJson(i.r)
     )
   }
 
   implicit val compWrites = new Writes[Computer] {
     def writes(c: Computer) = Json.obj(
       "name" -> c.name,
-      "xy" -> Json.toJson(c.xy)
+      "xy" -> Json.toJson(c.xy),
+      "interfaces" -> c.interfaces.map(x => Json.toJson(x))
     )
   }
 

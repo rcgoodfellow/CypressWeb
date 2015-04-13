@@ -2,7 +2,7 @@ html {
 }
 
 body {
-    background-color: #747474;
+    background-color: #fff;
 }
 
 #code {
@@ -10,7 +10,7 @@ body {
     top: 0px;
     left: 0px;
     right: 0px;
-    bottom: 176px;
+    bottom: 179px;
 }
 
 #console {
