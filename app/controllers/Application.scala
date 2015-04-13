@@ -192,8 +192,8 @@ object Application extends play.api.mvc.Controller {
     val fdata = form.get
     val exp = DB.experiments.get(user).get.find(x => x.name == form.get.exp).get
 
-    if(fdata.typ == "computer") {
-      val comp = exp.computers.find(c => c.name == fdata.name)
+    if(fdata.path.last.kind == "computer") {
+      val comp = exp.computers.find(c => c.name == fdata.path.last.name)
       comp.foreach(c => {
         c.xy.x = fdata.x
         c.xy.y = fdata.y

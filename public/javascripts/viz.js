@@ -59,6 +59,16 @@ function clearVizTree() {
     compG.children = [];
 }
 
+function getPath(n) {
+    if(typeof n.kind === 'undefined') return [];
+
+    var p = [{kind: n.kind, name: n.info.name}];
+    if(n.parent && n.parent.kind) {
+        p = getPath(n.parent).concat(p)
+    }
+    return p;
+}
+
 function drawComputer(c) {
     var x = new THREE.Mesh(
         new THREE.PlaneGeometry(30,30),
@@ -80,7 +90,6 @@ function drawComputer(c) {
         y.position.z = 1;
         y.info = iface;
         y.kind = ObjKind.Interface;
-        y.comp = x;
         y.clamp = function() {
 
             var clmp = function(x, a) {
@@ -127,9 +136,9 @@ function updateCoords(event) {
     mouse.y = -(event.layerY / container.offsetHeight) * 2 + 1;
 }
 
-function updateObjectXY(type, name, x, y) {
+function updateObjectXY(path, name, x, y) {
 
-    $.post("updateXY", {type: type, name: name, x: x, y: y, exp: expname})
+    $.post("updateXY", {path: path, x: x, y: y, exp: expname})
 
 }
 
@@ -152,14 +161,11 @@ function viz_mousedown(event) {
             off.y = selected.object.comp.position.y;
         }
 
+        container.onmouseup = function() {
 
-        container.onmouseup = function(upE) {
-            updateCoords(upE);
-            raycaster.setFromCamera(mouse, camera);
-            var ixs = raycaster.intersectObject(baseplane);
-
-            updateObjectXY("computer", selected.object.info.name,
-                ixs[0].point.x, ixs[0].point.y);
+            var obj = selected.object;
+            updateObjectXY(getPath(obj),
+                obj.info.name, obj.position.x, obj.position.y);
 
             container.onmousemove = null;
             container.onmouseup = null;

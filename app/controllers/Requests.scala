@@ -6,7 +6,7 @@ package controllers.requests
  */
 
 import play.api.data.Form
-import play.api.data.Forms.{mapping, text, of}
+import play.api.data.Forms.{mapping, text, of, list, seq}
 import models.User
 import play.api.data.format.Formats._
 
@@ -16,14 +16,24 @@ case class View(name: String, view: String)
 
 case class Code(source: String, exp: String)
 
-case class VisualUpdate(typ: String, name: String, x: Double, y: Double, exp: String)
+object Kinds {
+  val COMPUTER = 0
+  val INTERFACE = 1
+}
+
+case class PathElement(kind: String, name: String)
+case class VisualUpdate(path: List[PathElement], x: Double, y: Double, exp: String)
 
 object Forms {
 
   val visualUpdateForm: Form[VisualUpdate] = Form(
     mapping(
-      "type" -> text,
-      "name" -> text,
+      "path" -> list[PathElement](
+        mapping(
+          "kind" -> text,
+          "name" -> text
+        )(PathElement.apply)(PathElement.unapply)
+      ),
       "x" -> of(doubleFormat),
       "y" -> of(doubleFormat),
       "exp" -> text
