@@ -37,7 +37,7 @@ object Application extends play.api.mvc.Controller {
   implicit val interfaceWrites = new Writes[Interface] {
     def writes(i: Interface) = Json.obj(
       "name" -> i.name,
-      "r" -> Json.toJson(i.r)
+      "xy" -> Json.toJson(i.xy)
     )
   }
 

@@ -14,18 +14,16 @@ trait VisualComponent {
   var xy: CartesianCoord = CartesianCoord(0,0)
 }
 
-trait Connector {
-  var r: RadialCoord = RadialCoord(0)
-}
-
 trait Software extends VisualComponent {
   val name: String
 }
 
-case class Interface(name: String) extends Connector
+case class Interface(name: String) extends VisualComponent {
+  xy = CartesianCoord(15,0)
+}
 
 case class Computer(
-  name: String,
+  var name: String,
   os: L[String],
   software: L[Software] = L[Software](),
   interfaces: L[Interface] = L[Interface]()

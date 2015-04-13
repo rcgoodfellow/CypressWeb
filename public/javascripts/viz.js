@@ -75,8 +75,8 @@ function drawComputer(c) {
             new THREE.PlaneGeometry(7,7),
             new THREE.MeshBasicMaterial({color:0xCCCCCC})
         );
-        y.position.x = 15*Math.cos(iface.r.theta);
-        y.position.y = 15*Math.sin(iface.r.theta);
+        y.position.x = iface.xy.x;
+        y.position.y = iface.xy.y;
         y.position.z = 1;
         y.info = iface;
         y.kind = ObjKind.Interface;
@@ -90,11 +90,10 @@ function drawComputer(c) {
                 return v;
             };
 
-            //this.position.x = clmp(this.position.x, 15);
-            //this.position.y = clmp(this.position.y, 15);
-
             var arg = Math.atan2(this.position.y, this.position.x);
-            if(arg > -Math.PI/4 && arg <= Math.PI/4) {
+            if (arg < 0) arg += 2*Math.PI;
+
+            if((arg >= 0 && arg <= Math.PI/4) || (arg >= 7*Math.PI/4)) {
                 this.position.x = 15;
                 this.position.y = clmp(this.position.y, 15);
             }
