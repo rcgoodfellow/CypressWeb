@@ -42,6 +42,12 @@ case class Interface(name: String, host: Host) extends VisualComponent {
     PathElement(Kinds.COMPUTER, host.name),
     PathElement(Kinds.INTERFACE, name)
   )
+
+  def connect(s: Substrate): Interface = {
+    substrates += s
+    s.interfaces += this
+    this
+  }
 }
 
 trait Host {
@@ -50,6 +56,11 @@ trait Host {
   val software: L[Software]
   val interfaces: L[Interface]
   val kind: Int
+
+  def addInterface(name: String) : Host = {
+    interfaces += Interface(name, this)
+    this
+  }
 }
 
 case class Computer(

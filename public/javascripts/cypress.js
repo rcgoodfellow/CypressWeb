@@ -102,17 +102,18 @@ function updateModelData(name) {
 
 function drawModel() {
     clearVizTree();
-    if(typeof exp_view.computers !== 'undefined') {
-        for (var i = 0; i < exp_view.computers.length; i++) {
-            var c = exp_view.computers[i];
-            drawComputer(c);
-        }
-    }
 
     if(typeof exp_view.substrates !== 'undefined') {
         for(var i=0; i<exp_view.substrates.length; i++) {
             var s = exp_view.substrates[i];
             drawSubstrate(s);
+        }
+    }
+
+    if(typeof exp_view.computers !== 'undefined') {
+        for (var i = 0; i < exp_view.computers.length; i++) {
+            var c = exp_view.computers[i];
+            drawComputer(c);
         }
     }
 }

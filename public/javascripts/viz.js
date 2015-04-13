@@ -22,7 +22,8 @@ var ObjKind = {
 
 var baseG = new THREE.Group(),
     compG = new THREE.Group(),
-    subsG = new THREE.Group();
+    subsG = new THREE.Group(),
+    cnxG = new THREE.Group();
 
 function showViz() {
 
@@ -53,6 +54,7 @@ function showViz() {
 
     baseG.add(compG);
     baseG.add(subsG);
+    baseG.add(cnxG);
     scene.add(baseG);
 
     camera.position.z = 100;
@@ -127,38 +129,117 @@ function drawComputer(c) {
             }
 
         };
+
+        y.terms = [];
+        y.updateTerms = function() {
+            for(var i=0; i<this.terms.length; i++) {
+                scene.updateMatrixWorld();
+                this.parent.updateMatrixWorld();
+                this.terms[i].v.setFromMatrixPosition(this.matrixWorld);
+                this.terms[i].v.z = 0;
+                this.terms[i].g.verticesNeedUpdate = true;
+                render();
+            }
+
+        };
+
         x.add(y);
     }
 
     compG.add(x);
     render();
+
+    for(var i=0; i<c.interfaces.length; i++) {
+
+        var iface = c.interfaces[i];
+
+        for(var j=0; j<iface.substrates.length; j++) {
+            var sname = iface.substrates[i];
+            var s = findSubstrate(sname);
+            addConnection(y, s);
+        }
+
+    }
+}
+
+function findSubstrate(name) {
+
+    for(var i=0; i<subsG.children.length; i++) {
+        var s = subsG.children[i];
+        if(s.info.name === name) return s
+    }
+    return null;
+}
+
+function addConnection(a, b) {
+
+    scene.updateMatrixWorld();
+
+    var geom = new THREE.Geometry();
+    geom.dynamic = true;
+
+    var ac = new THREE.Vector3();
+    a.terms.push({g: geom, v: ac});
+    a.updateTerms();
+
+    /*
+    if(typeof a.parent !== 'undefined') {
+        a.parent.updateMatrixWorld();
+    }
+    ac.setFromMatrixPosition(a.matrixWorld);
+    */
+
+    var bc = new THREE.Vector3();
+    b.terms.push({g: geom, v: bc});
+    b.updateTerms();
+
+    /*
+    if(typeof b.parent !== 'undefined') {
+        b.parent.updateMatrixWorld();
+    }
+    bc.setFromMatrixPosition(b.matrixWorld);
+    bc.z = 0;
+    */
+
+    geom.vertices.push(ac, bc);
+
+    var line = new THREE.Line(
+        geom,
+        new THREE.LineBasicMaterial({color: 0xDDDDDD})
+    );
+
+    cnxG.add(line);
+
+    render();
+
 }
 
 function drawSubstrate(s) {
-    var inner_radius = 17,
-        outer_radius = 20,
+    var radius = 20,
         segments = 64,
-        outer_color = 0xCCCCCC,
-        inner_color = 0x004477;
+        color = 0xCCCCCC;
 
     var x = new THREE.Mesh(
-        new THREE.CircleGeometry(outer_radius, segments),
-        new THREE.MeshBasicMaterial({color: outer_color})
+        new THREE.CircleGeometry(radius, segments),
+        new THREE.MeshBasicMaterial({color: color})
     );
 
     x.position.x = s.xy.x;
     x.position.y = s.xy.y;
+    x.position.z = 1;
     x.info = s;
     x.kind = ObjKind.Substrate;
-    /*
-    var y = new THREE.Mesh(
-        new THREE.CircleGeometry(inner_radius, segments),
-        new THREE.MeshBasicMaterial({color: inner_color})
-    );
-    y.position.z = 1;
-    y.
-    x.add(y);
-    */
+    x.terms = [];
+
+    x.updateTerms = function() {
+        for(var i=0; i<this.terms.length; i++) {
+            scene.updateMatrixWorld();
+            this.terms[i].v.setFromMatrixPosition(this.matrixWorld);
+            this.terms[i].v.z = 0;
+            this.terms[i].g.verticesNeedUpdate = true;
+        }
+        render();
+    };
 
     subsG.add(x);
     render();
@@ -182,6 +263,21 @@ function updateObjectXY(path, x, y) {
         contentType: "application/json",
         dataType: "json"
     });
+
+}
+
+function obj_updateTerms(o) {
+    if(typeof o.updateTerms !== 'undefined') {
+        o.updateTerms()
+    }
+
+    if(typeof o.children !== 'undefined') {
+        if(typeof o.children.length !== 'undefined') {
+            for(var i=0; i<o.children.length; i++) {
+                obj_updateTerms(o.children[i])
+            }
+        }
+    }
 
 }
 
@@ -225,6 +321,12 @@ function viz_mousedown(event) {
                 selected.object.position.x = ix.point.x - off.x;
                 selected.object.position.y = ix.point.y - off.y;
                 if(selected.object.clamp) selected.object.clamp();
+                /*
+                if(typeof selected.object.updateTerms !== 'undefined') {
+                    selected.object.updateTerms();
+                }
+                */
+                obj_updateTerms(selected.object);
                 render();
             }
         }
