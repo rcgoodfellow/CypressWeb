@@ -1,6 +1,13 @@
 package models
 
+import play.api.libs.json.Json
 import scala.collection.mutable.{ListBuffer => L}
+import models.IO._
+import play.api.libs.json.{JsObject, Json}
+import play.modules.reactivemongo.json.collection.JSONCollection
+import scala.util.{Failure, Success}
+import reactivemongo.api._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
 *  The Cypress Project
@@ -12,8 +19,22 @@ object DB {
     "ry" -> L[Experiment]()
   )
 
-  def save: Unit = {
+  private val driver = new MongoDriver
+  private val connection = driver.connection(List("localhost"))
+  private val db = connection("cypress_users")
 
+  def save: Unit = {
+    experiments.foreach(x => {
+      val user = x._1
+      val collection = db[JSONCollection](user)
+      x._2.foreach(y => {
+        val sel = Json.obj("name" -> y.name)
+        val exp = Json.toJson(y)
+        //collection.insert(exp)
+        collection.update(selector=sel, update=exp, upsert=true)
+
+      })
+    })
   }
 }
 

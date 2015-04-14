@@ -4,92 +4,17 @@ import java.io.{ByteArrayOutputStream, File}
 
 import play.api.mvc._
 import models._
-import play.api.libs.json._
-import scala.collection.mutable
-import scala.collection.mutable.{ListBuffer => L}
 import javax.script.{ScriptException, ScriptEngineManager}
 import requests._
 import requests.Forms._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import models.IO._
 
 class Thing
 
 object Application extends play.api.mvc.Controller {
-
-  /*
-  implicit val expWrites = new Writes[Experiment] {
-    def writes(exp: Experiment) = Json.obj(
-      "name" -> exp.name,
-      "computers" -> exp.computers.map(x => Json.obj("name" -> x.name))
-    )
-  }
-  */
-
-  implicit val ccoordWrites = new Writes[CartesianCoord] {
-    def writes(c: CartesianCoord) = Json.obj(
-      "x" -> c.x,
-      "y" -> c.y
-    )
-  }
-  
-  implicit val rcoordWrites = new Writes[RadialCoord] {
-    def writes(r: RadialCoord) = Json.obj(
-      "theta" -> r.theta
-    )
-  }
-
-  implicit val interfaceWrites = new Writes[Interface] {
-    def writes(i: Interface) = Json.obj(
-      "name" -> i.name,
-      "xy" -> Json.toJson(i.xy),
-      "substrates" -> i.substrates.map(x => x.name)
-    )
-  }
-
-  implicit val compWrites = new Writes[Computer] {
-    def writes(c: Computer) = Json.obj(
-      "name" -> c.name,
-      "xy" -> Json.toJson(c.xy),
-      "interfaces" -> c.interfaces.map(x => Json.toJson(x))
-    )
-  }
-
-  implicit val pathElementWrites = new Writes[PathElement] {
-    def writes(p: PathElement) = Json.obj(
-      "kind" -> p.kind,
-      "name" -> p.name
-    )
-  }
-
-  implicit val substrateWrites = new Writes[Substrate] {
-    def writes(s: Substrate) = Json.obj(
-      "name" -> s.name,
-      "xy" -> Json.toJson(s.xy),
-      "interfaces" -> s.interfaces.map(_.getPath.map(x => Json.toJson(x)))
-    )
-  }
-
-  implicit val expViewWrites = new Writes[ExperimentView] {
-    def writes(exp: ExperimentView) = Json.obj(
-      "name" -> exp.name,
-      "computers" -> exp.computers().map(c => Json.toJson(c)),
-      "substrates" -> exp.substrates().map(s => Json.toJson(s))
-    )
-  }
-
-  implicit val pathElementsReads : Reads[PathElement] = (
-    (JsPath \ "kind").read[Int] and
-    (JsPath \ "name").read[String]
-  )(PathElement.apply _)
-
-  implicit val visualUpdateReads : Reads[VisualUpdate] = (
-    (JsPath \ "path").read[List[PathElement]] and
-    (JsPath \ "x").read[Double] and
-    (JsPath \ "y").read[Double] and
-    (JsPath \ "exp").read[String]
-  )(VisualUpdate.apply _)
 
   def index = Action {
     Ok(views.html.login(loginForm))
@@ -205,6 +130,7 @@ object Application extends play.api.mvc.Controller {
       try {
         val eval_result = E.eval(src, ctx)
         if (eval_result != null) {
+          DB.save
           Ok(eval_result.toString)
         }
         else {

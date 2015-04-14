@@ -19,4 +19,6 @@ libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.1"
 
 libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.10.5.0.akka23"
 
+libraryDependencies += "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.0.akka23"
+
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )  

@@ -3,10 +3,10 @@
  * Created by ry on 4/13/15.
  */
 
+import play.api.libs.json.{JsObject, Json}
+import play.modules.reactivemongo.json.collection.JSONCollection
 import scala.util.{Failure, Success}
 import reactivemongo.api._
-import reactivemongo.bson._
-import reactivemongo.api.collections.default.BSONCollection
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object DBMuffins {
@@ -14,12 +14,12 @@ object DBMuffins {
   def dbTest(): Unit = {
     val driver = new MongoDriver
     val connection = driver.connection(List("localhost"))
-    val db = connection("muffins")
-    val collection = db[BSONCollection]("test")
-    val query = BSONDocument()
-    collection.find(query).cursor[BSONDocument].collect[List]().
+    val db = connection("cypress")
+    val collection = db[JSONCollection]("meta")
+    val query = Json.obj()
+    collection.find(query).cursor[JsObject].collect[List]().
       onComplete {
-      case Success(y) => y.foreach(d => println(BSONDocument.pretty(d)))
+      case Success(y) => y.foreach(d => println(d))
       case Failure(_) => println("shart")
     }
 

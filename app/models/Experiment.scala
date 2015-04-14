@@ -5,9 +5,9 @@ package models
  * Created by ry on 4/6/15.
  */
 
-import controllers.requests.{PathElement}
-
 import scala.collection.mutable.{ListBuffer => L}
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
 
 object Kinds {
   val COMPUTER:Int = 0
@@ -16,6 +16,9 @@ object Kinds {
   val SENSOR: Int = 3
   val SUBSTRATE: Int = 4
 }
+
+case class PathElement(kind: Int, name: String)
+case class VisualUpdate(path: List[PathElement], x: Double, y: Double, exp: String)
 
 case class CartesianCoord(var x: Double, var y: Double)
 case class RadialCoord(var theta: Double)
@@ -179,5 +182,81 @@ case class ExperimentView(name: String, exp: Experiment)
 
     Extent(x, y)
   }
+}
+
+
+object IO {
+
+  implicit val ccoordWrites = new Writes[CartesianCoord] {
+    def writes(c: CartesianCoord) = Json.obj(
+      "x" -> c.x,
+      "y" -> c.y
+    )
+  }
+
+  implicit val rcoordWrites = new Writes[RadialCoord] {
+    def writes(r: RadialCoord) = Json.obj(
+      "theta" -> r.theta
+    )
+  }
+
+  implicit val interfaceWrites = new Writes[Interface] {
+    def writes(i: Interface) = Json.obj(
+      "name" -> i.name,
+      "xy" -> Json.toJson(i.xy),
+      "substrates" -> i.substrates.map(x => x.name)
+    )
+  }
+
+  implicit val compWrites = new Writes[Computer] {
+    def writes(c: Computer) = Json.obj(
+      "name" -> c.name,
+      "xy" -> Json.toJson(c.xy),
+      "interfaces" -> c.interfaces.map(x => Json.toJson(x))
+    )
+  }
+
+  implicit val pathElementWrites = new Writes[PathElement] {
+    def writes(p: PathElement) = Json.obj(
+      "kind" -> p.kind,
+      "name" -> p.name
+    )
+  }
+
+  implicit val substrateWrites = new Writes[Substrate] {
+    def writes(s: Substrate) = Json.obj(
+      "name" -> s.name,
+      "xy" -> Json.toJson(s.xy),
+      "interfaces" -> s.interfaces.map(_.getPath.map(x => Json.toJson(x)))
+    )
+  }
+
+  implicit val expViewWrites = new Writes[ExperimentView] {
+    def writes(exp: ExperimentView) = Json.obj(
+      "name" -> exp.name,
+      "computers" -> exp.computers().map(c => Json.toJson(c)),
+      "substrates" -> exp.substrates().map(s => Json.toJson(s))
+    )
+  }
+
+  implicit val expWrites = new Writes[Experiment] {
+    def writes(exp: Experiment) = Json.obj(
+      "name" -> exp.name,
+      "computers" -> exp.computers.map(c => Json.toJson(c)),
+      "substrates" -> exp.substrates.map(s => Json.toJson(s))
+    )
+  }
+
+  implicit val pathElementsReads : Reads[PathElement] = (
+    (JsPath \ "kind").read[Int] and
+      (JsPath \ "name").read[String]
+    )(PathElement.apply _)
+
+  implicit val visualUpdateReads : Reads[VisualUpdate] = (
+    (JsPath \ "path").read[List[PathElement]] and
+      (JsPath \ "x").read[Double] and
+      (JsPath \ "y").read[Double] and
+      (JsPath \ "exp").read[String]
+    )(VisualUpdate.apply _)
 }
 
