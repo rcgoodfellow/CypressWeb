@@ -79,10 +79,9 @@ object Controller {
   def read(x: JsValue) = Json.fromJson[Controller](x)
 }
 
-case class Interface(name: String, hostname: String) extends VisualComponent {
+case class Interface(name: String, hostname: String, override val xy: CartesianCoord = CartesianCoord(15,0))
+  extends VisualComponent {
   val substrates = L[Substrate]()
-  xy.x = 15
-  xy.y = 0
   var host: Option[Host] = None
 
   override def toString = {
@@ -205,7 +204,8 @@ case class Sensor(
   val os = L("embedded")
 }
 
-case class Substrate(name: String, interfaces: L[Interface] = L[Interface]())
+case class Substrate(name: String,
+  interfaces: L[Interface] = L[Interface](), override val xy: CartesianCoord = CartesianCoord(0,0))
   extends VisualComponent
 {
   def interface(x: String) = interfaces.find(i => i.name == x).get
@@ -227,10 +227,7 @@ case class Experiment(name: String,
   def clink(a: Interface, b: Interface){ clinks += CLink(a, b) }
 }
 
-
-
 case class Extent(var x: Double, var y: Double)
-
 
 case class ExperimentView(name: String, expname: String)
 {
@@ -281,16 +278,19 @@ object IO {
   implicit val interfaceWrites = new Writes[Interface] {
     def writes(i: Interface) = Json.obj(
       "name" -> i.name,
+      "host" -> i.hostname,
       "xy" -> Json.toJson(i.xy),
       "substrates" -> i.substrates.map(x => x.name)
     )
   }
 
+  implicit val fCarto = Json.format[CartesianCoord]
+
   implicit val interfaceReads : Reads[Interface] = (
     (JsPath \ "name").read[String] and
-    (JsPath \ "host").read[String]
+    (JsPath \ "host").read[String] and
+    (JsPath \ "xy").read[CartesianCoord]
   )(Interface.apply _)
-
 
 
   implicit val pathElementWrites = new Writes[PathElement] {
@@ -299,6 +299,12 @@ object IO {
       "name" -> p.name
     )
   }
+
+  implicit val substrateReads : Reads[Substrate] = (
+    (JsPath \ "name").read[String] and
+    (JsPath \ "interfaces").read[L[Interface]] and
+    (JsPath \ "xy").read[CartesianCoord]
+  )(Substrate.apply _)
 
   implicit val substrateWrites = new Writes[Substrate] {
     def writes(s: Substrate) = Json.obj(
@@ -340,7 +346,6 @@ object IO {
     )
   }
 
-  implicit val fCarto = Json.format[CartesianCoord]
 
   implicit val compReads : Reads[Computer] = (
     (JsPath \ "name").read[String] and
