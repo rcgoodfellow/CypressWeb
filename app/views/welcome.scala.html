@@ -1,4 +1,4 @@
-@(user: User)
+@(user: User, db: DB)
 
 <!DOCTYPE html>
 
@@ -17,7 +17,7 @@
     <body>
         @topnav(user)
         <div id="main_content">
-            @experiments(user)
+            @experiments(db)
         </div>
     </body>
 </html>

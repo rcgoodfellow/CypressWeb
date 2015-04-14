@@ -24,25 +24,75 @@ case class CartesianCoord(var x: Double, var y: Double)
 case class RadialCoord(var theta: Double)
 
 trait VisualComponent {
-  var xy: CartesianCoord = CartesianCoord(0,0)
+  val xy: CartesianCoord = CartesianCoord(0,0)
 }
 
+//Software Type Family -------------------------------------------------------------------
 trait Software extends VisualComponent {
-  val name: String
+  var name: String
+  lazy val kind = getClass.getTypeName
+  def write : JsValue
 }
 
-case class Interface(name: String, host: Host) extends VisualComponent {
+object Software {
+  val readers = Map(
+    GenericSoftware.getClass.getTypeName -> GenericSoftware.read _,
+    Controller.getClass.getTypeName -> Controller.read _
+  )
+}
+
+
+case class GenericSoftware (
+  var name: String
+) extends Software {
+
+ def write = {
+   implicit val w = Json.writes[GenericSoftware]
+   Json.toJson(this)
+ }
+
+}
+
+object GenericSoftware {
+  implicit val r = Json.reads[GenericSoftware]
+  def read(x: JsValue) = Json.fromJson[GenericSoftware](x)
+}
+
+
+case class Controller (
+  var name: String,
+  in: L[String], out: L[String],
+  cg: CodeGen
+) extends Software {
+
+  def write = {
+    implicit val cw = Json.writes[CodeGen]
+    implicit val w = Json.writes[Controller]
+    Json.toJson(this)
+  }
+
+}
+
+object Controller {
+  implicit val codeGenReads = Json.reads[CodeGen]
+  implicit val r = Json.reads[Controller]
+  def read(x: JsValue) = Json.fromJson[Controller](x)
+}
+
+case class Interface(name: String, hostname: String) extends VisualComponent {
   val substrates = L[Substrate]()
-  xy = CartesianCoord(15,0)
+  xy.x = 15
+  xy.y = 0
+  var host: Option[Host] = None
 
   override def toString = {
     "name: " + name + "\n" +
     "substrates: " + substrates.map(_.name).mkString("[",",","]") + "\n" +
-    "host: " + host.name + "\n"
+    "host: " + hostname + "\n"
   }
 
   def getPath : List[PathElement] = List(
-    PathElement(Kinds.COMPUTER, host.name),
+    PathElement(Kinds.COMPUTER, hostname),
     PathElement(Kinds.INTERFACE, name)
   )
 
@@ -61,8 +111,26 @@ trait Host {
   val kind: Int
 
   def addInterface(name: String) : Host = {
-    interfaces += Interface(name, this)
+    val ifx = Interface(name, this.name)
+    ifx.host = Some(this)
+    interfaces += ifx
     this
+  }
+}
+
+object Host {
+  def apply(name: String, os: L[String], software: L[Software],
+             interfaces: L[Interface], kind: Int) : Host = {
+    kind match {
+      case Kinds.COMPUTER => Computer(name, os, software, interfaces)
+      case Kinds.ACTUATOR => Actuator(name)
+      case Kinds.SENSOR => Sensor(name)
+    }
+  }
+
+  def unapply(h: Host)
+    : Option[(String, L[String], L[Software], L[Interface], Int)] = {
+    Some(h.name, h.os, h.software, h.interfaces, h.kind)
   }
 }
 
@@ -70,7 +138,8 @@ case class Computer(
   var name: String,
   os: L[String] = L("linux"),
   software: L[Software] = L[Software](),
-  interfaces: L[Interface] = L[Interface]()
+  interfaces: L[Interface] = L[Interface](),
+  override val xy: CartesianCoord = CartesianCoord(0,0)
 ) extends Host with VisualComponent {
 
   val kind = Kinds.COMPUTER
@@ -85,15 +154,21 @@ case class Computer(
   }
 }
 
-trait CodeGen
+/*
+object Computer {
+  def VComputer(name: String, os: L[String], software: L[Software],
+                interfaces: L[Interface], coord: CartesianCoord)
+  : Computer = {
+    val c = Computer(name, os, software, interfaces)
+    c
+  }
+}
+*/
+//todo back to trait with concrete empty implementer
+case class CodeGen(name: String)
 
-object RCGen extends CodeGen {}
+//object RCGen extends CodeGen {}
 
-case class Controller(
-  name: String,
-  in: L[String], out: L[String],
-  cg: CodeGen
-) extends Software
 
 case class Coupling(x: String)
 
@@ -101,9 +176,8 @@ case class PLink(a: Coupling, b: Coupling)
 
 case class CLink(a: Interface, b: Interface)
 
-trait PObject extends VisualComponent{
-  val name: String
-  val couplings: L[Coupling] = L[Coupling]()
+case class PObject(name: String, couplings: L[Coupling])
+  extends VisualComponent{
   def coupling(x: String) = couplings.find(c => c.x == x).get
 }
 
@@ -113,7 +187,8 @@ case class Actuator(
 ) extends Host
 {
   val kind = Kinds.ACTUATOR
-  val interfaces = L(Interface("in", this))
+  val interfaces = L(Interface("in", this.name))
+  interfaces(0).host = Some(this)
   val software = L[Software]()
   val os = L[String]("embedded")
 }
@@ -124,7 +199,8 @@ case class Sensor(
 ) extends Host
 {
   val kind = Kinds.SENSOR
-  val interfaces = L(Interface("out", this))
+  val interfaces = L(Interface("out", this.name))
+  interfaces(0).host = Some(this)
   val software = L[Software]()
   val os = L("embedded")
 }
@@ -156,18 +232,20 @@ case class Experiment(name: String,
 case class Extent(var x: Double, var y: Double)
 
 
-case class ExperimentView(name: String, exp: Experiment)
+case class ExperimentView(name: String, expname: String)
 {
   override def toString: String = "ExperimentView"
 
+  var exp: Option[Experiment] = None
+
   def computers : () => L[Computer] =
-    () => exp.computers
+    () => exp.get.computers
 
   def objects : () => L[PObject] =
-    () => exp.objects
+    () => exp.get.objects
 
   def substrates : () => L[Substrate] =
-    () => exp.substrates
+    () => exp.get.substrates
 
   def visuals[T <: VisualComponent] = List(computers(), objects(), substrates())
 
@@ -208,13 +286,12 @@ object IO {
     )
   }
 
-  implicit val compWrites = new Writes[Computer] {
-    def writes(c: Computer) = Json.obj(
-      "name" -> c.name,
-      "xy" -> Json.toJson(c.xy),
-      "interfaces" -> c.interfaces.map(x => Json.toJson(x))
-    )
-  }
+  implicit val interfaceReads : Reads[Interface] = (
+    (JsPath \ "name").read[String] and
+    (JsPath \ "host").read[String]
+  )(Interface.apply _)
+
+
 
   implicit val pathElementWrites = new Writes[PathElement] {
     def writes(p: PathElement) = Json.obj(
@@ -226,15 +303,66 @@ object IO {
   implicit val substrateWrites = new Writes[Substrate] {
     def writes(s: Substrate) = Json.obj(
       "name" -> s.name,
-      "xy" -> Json.toJson(s.xy),
-      "interfaces" -> s.interfaces.map(_.getPath.map(x => Json.toJson(x)))
+      "interfaces" -> s.interfaces.map(_.getPath.map(x => Json.toJson(x))),
+      "xy" -> Json.toJson(s.xy)
     )
   }
 
-  implicit val expViewWrites = new Writes[ExperimentView] {
+  implicit val expViewDBWrites = new Writes[ExperimentView] {
     def writes(exp: ExperimentView) = Json.obj(
       "name" -> exp.name,
-      "computers" -> exp.computers().map(c => Json.toJson(c)),
+      "expname" -> exp.expname
+    )
+  }
+
+
+  implicit val expViewReads : Reads[ExperimentView] = (
+    (JsPath \ "name").read[String] and
+    (JsPath \ "expname").read[String]
+  )(ExperimentView.apply _)
+
+
+  implicit val softwareReads = new Format[Software] {
+    def reads(v: JsValue) : JsResult[Software] = {
+      val kind = (v \ "kind").as[String]
+      Software.readers(kind)(v)
+    }
+    def writes(s: Software) = s.write
+  }
+
+  implicit val compWrites = new Writes[Computer] {
+    def writes(c: Computer) = Json.obj(
+      "name" -> c.name,
+      "os" -> c.os,
+      "software" -> c.software.map(x => Json.toJson(x)),
+      "interfaces" -> c.interfaces.map(x => Json.toJson(x)),
+      "xy" -> Json.toJson(c.xy)
+    )
+  }
+
+  implicit val fCarto = Json.format[CartesianCoord]
+
+  implicit val compReads : Reads[Computer] = (
+    (JsPath \ "name").read[String] and
+      (JsPath \ "os").read[L[String]] and
+      (JsPath \ "software").read[L[Software]] and
+      (JsPath \ "interfaces").read[L[Interface]] and
+      (JsPath \ "xy").read[CartesianCoord]
+    )(Computer.apply _)
+
+  implicit val fHost = Json.format[Host]
+  implicit val fCoupling = Json.format[Coupling]
+  implicit val fPObject = Json.format[PObject]
+  implicit val fSensor = Json.format[Sensor]
+  implicit val fActuator = Json.format[Actuator]
+  implicit val fCLink = Json.format[CLink]
+  implicit val fPLink = Json.format[PLink]
+  implicit val fSubstrate = Json.format[Substrate]
+
+  implicit val expViewClientWrites = new Writes[ExperimentView] {
+    def writes(exp: ExperimentView) = Json.obj(
+      "name" -> exp.name,
+      "computers" -> exp.computers().map(c => Json.toJson(c)(compWrites)),
       "substrates" -> exp.substrates().map(s => Json.toJson(s))
     )
   }
@@ -242,13 +370,31 @@ object IO {
   implicit val expWrites = new Writes[Experiment] {
     def writes(exp: Experiment) = Json.obj(
       "name" -> exp.name,
-      "computers" -> exp.computers.map(c => Json.toJson(c)),
-      "substrates" -> exp.substrates.map(s => Json.toJson(s))
+      "computers" -> exp.computers.map(c => Json.toJson(c)(compWrites)),
+      "objects" -> exp.objects.map(o => Json.toJson(o)),
+      "sensors" -> exp.sensors.map(s => Json.toJson(s)(fSensor)),
+      "actuators" -> exp.actuators.map(a => Json.toJson(a)(fActuator)),
+      "clinks" -> exp.clinks.map(c => Json.toJson(c)),
+      "plinks" -> exp.plinks.map(p => Json.toJson(p)),
+      "substrates" -> exp.substrates.map(s => Json.toJson(s)),
+      "views" -> exp.views.map(v => Json.toJson(v)(expViewDBWrites))
     )
   }
 
+  implicit val expReads : Reads[Experiment] = (
+      (JsPath \ "name").read[String] and
+      (JsPath \ "computers").read[L[Computer]] and
+      (JsPath \ "objects").read[L[PObject]] and
+      (JsPath \ "sensors").read[L[Sensor]] and
+      (JsPath \ "actuators").read[L[Actuator]] and
+      (JsPath \ "clinks").read[L[CLink]] and
+      (JsPath \ "plinks").read[L[PLink]] and
+      (JsPath \ "substrates").read[L[Substrate]] and
+      (JsPath \ "views").read[L[ExperimentView]]
+  )(Experiment.apply _)
+
   implicit val pathElementsReads : Reads[PathElement] = (
-    (JsPath \ "kind").read[Int] and
+      (JsPath \ "kind").read[Int] and
       (JsPath \ "name").read[String]
     )(PathElement.apply _)
 

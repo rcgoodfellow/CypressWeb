@@ -5,12 +5,12 @@ import java.io.{ByteArrayOutputStream, File}
 import play.api.mvc._
 import models._
 import javax.script.{ScriptException, ScriptEngineManager}
-import requests._
 import requests.Forms._
-import play.api.libs.functional.syntax._
-import play.api.libs.json.Reads._
 import play.api.libs.json._
 import models.IO._
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+import scala.concurrent.Future
 
 class Thing
 
@@ -20,13 +20,17 @@ object Application extends play.api.mvc.Controller {
     Ok(views.html.login(loginForm))
   }
 
-  def login = Action { implicit request =>
+  private var db : Option[DB] = None
+
+  def login = Action.async { implicit request =>
     val form = loginForm.bindFromRequest()
     if(form.get.name == "ry" && form.get.password == "muffins") {
-      Ok(views.html.welcome(form.get)).withSession("user" -> form.get.name)
+      db = Some(DB("ry"))
+      db.get.load().map(
+        x => Ok(views.html.welcome(form.get, db.get)).withSession("user" -> form.get.name))
     }
     else {
-      Ok(views.html.login(form)).withNewSession
+      Future{ Ok(views.html.login(form)).withNewSession }
     }
   }
 
@@ -36,8 +40,11 @@ object Application extends play.api.mvc.Controller {
 
     val user = request.session.get("user").get
     val exp = Experiment(form.get.name)
-    exp.views += ExperimentView("default", exp)
-    DB.experiments.get(user).get += exp
+    val view = ExperimentView("default", exp.name)
+    view.exp = Some(exp)
+    exp.views += view
+    //DB.users.get(user).get += exp
+    db.get.experiments += exp
 
     Ok("Creating : " + form.get.name)
   }
@@ -46,7 +53,8 @@ object Application extends play.api.mvc.Controller {
     val form = expForm.bindFromRequest()
     val user = request.session.get("user").get
 
-    val exp = DB.experiments.get(user).get.find(x => x.name == form.get.name)
+    //val exp = DB.users.get(user).get.find(x => x.name == form.get.name)
+    val exp = db.get.experiments.find(x => x.name == form.get.name)
 
     exp match {
       case Some(value) => Ok(views.html.design(value))
@@ -58,7 +66,7 @@ object Application extends play.api.mvc.Controller {
 
   def expView = Action { implicit request =>
 
-    Ok(views.html.experiments(User("ry", "muffins")))
+    Ok(views.html.experiments(db.get))
 
   }
 
@@ -67,7 +75,8 @@ object Application extends play.api.mvc.Controller {
     val form = expForm.bindFromRequest()
     val user = request.session.get("user").get
 
-    val exp = DB.experiments.get(user).get.find(x => x.name == form.get.name)
+    //val exp = DB.users.get(user).get.find(x => x.name == form.get.name)
+    val exp = db.get.experiments.find(x => x.name == form.get.name)
 
     exp match {
       case Some(value) => Ok(views.html.code(value))
@@ -84,18 +93,15 @@ object Application extends play.api.mvc.Controller {
 
     form.value match {
       case Some(frm) =>
-        DB.experiments.get(user) match {
-          case Some(user_data) =>
-            user_data.find(x => x.name == frm.name) match {
-              case Some(exp) =>
-                exp.views.find(x => x.name == frm.view) match {
-                  case Some(view) => Ok(Json.toJson(view))
-                  case None => NotFound(
-                    "The view <b>" + form.get.view + "</b> does not seem to exist " +
-                      "for the experiment <b>" + frm.name + "</b>"); }
+        db.get.experiments.find(x => x.name == frm.name) match {
+          case Some(exp) =>
+            exp.views.find(x => x.name == frm.view) match {
+              case Some(view) => Ok(Json.toJson(view)(expViewClientWrites))
               case None => NotFound(
-                "The experiment <b>" + frm.name + "</b> does not seem to exist :(" ) }
-          case None => NotFound("The user <b>"+user+"</b> does not seemt o exist :(") }
+                "The view <b>" + form.get.view + "</b> does not seem to exist " +
+                  "for the experiment <b>" + frm.name + "</b>"); }
+          case None => NotFound(
+            "The experiment <b>" + frm.name + "</b> does not seem to exist :(" ) }
       case None => BadRequest("Malformed Request")
     }
 
@@ -120,7 +126,8 @@ object Application extends play.api.mvc.Controller {
 
     val src = form.get.source + ";"
 
-    val exp = DB.experiments.get(user).get.find(x => x.name == form.get.exp).get
+    //val exp = DB.users.get(user).get.find(x => x.name == form.get.exp).get
+    val exp = db.get.experiments.find(x => x.name == form.get.exp).get
     E.put("_exp", exp)
     E.eval("val exp = _exp.asInstanceOf[Experiment]", ctx)
 
@@ -130,7 +137,7 @@ object Application extends play.api.mvc.Controller {
       try {
         val eval_result = E.eval(src, ctx)
         if (eval_result != null) {
-          DB.save
+          db.get.save(exp)
           Ok(eval_result.toString)
         }
         else {
@@ -173,11 +180,15 @@ object Application extends play.api.mvc.Controller {
 
     val user = request.session.get("user").get
     val vup = Json.fromJson[VisualUpdate](request.body.asJson.get).get
-    val exp = DB.experiments.get(user).get.find(x => x.name == vup.exp).get
+    //val exp = DB.users.get(user).get.find(x => x.name == vup.exp).get
+    val exp = db.get.experiments.find(x => x.name == vup.exp).get
 
     val p::ps = vup.path
     val vobj = findExpObject(p, ps, exp)
-    vobj.xy = CartesianCoord(vup.x, vup.y)
+    vobj.xy.x = vup.x
+    vobj.xy.y = vup.y
+
+    db.get.save(exp)
 
     Ok("")
   }

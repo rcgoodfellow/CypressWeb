@@ -1,11 +1,11 @@
-@(user: User)
+@(db: DB)
 
 <div id="experiments">
     <div id="display">
         <div class="exp_preview exp_preview_new" onclick="newExp()">
             New
         </div>
-        @for(exp <- user.experiments) {
+        @for(exp <- db.experiments) {
             <div class="exp_preview" onclick="goDesign('@exp.name')">
                 <span>@exp.name</span>
             </div>
