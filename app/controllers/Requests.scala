@@ -16,8 +16,6 @@ case class View(name: String, view: String)
 
 case class Code(source: String, exp: String)
 
-
-
 case class PathElement(kind: Int, name: String)
 case class VisualUpdate(path: List[PathElement], x: Double, y: Double, exp: String)
 

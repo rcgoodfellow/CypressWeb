@@ -245,30 +245,13 @@ object Application extends play.api.mvc.Controller {
 
   def updateXY = Action { implicit request =>
 
-    //val form = visualUpdateForm.bindFromRequest()
     val user = request.session.get("user").get
-
     val vup = Json.fromJson[VisualUpdate](request.body.asJson.get).get
-
-    //val fdata = form.get
     val exp = DB.experiments.get(user).get.find(x => x.name == vup.exp).get
 
     val p::ps = vup.path
-
     val vobj = findExpObject(p, ps, exp)
-
     vobj.xy = CartesianCoord(vup.x, vup.y)
-
-    /*
-    if(vup.path.last.kind == Kinds.COMPUTER) {
-      val comp = exp.computers.find(c => c.name == vup.path.last.name)
-      comp.foreach(c => {
-        c.xy.x = vup.x
-        c.xy.y = vup.y
-      })
-    }
-    */
-
 
     Ok("")
   }

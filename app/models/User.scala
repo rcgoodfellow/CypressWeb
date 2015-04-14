@@ -12,6 +12,9 @@ object DB {
     "ry" -> L[Experiment]()
   )
 
+  def save: Unit = {
+
+  }
 }
 
 case class User(name: String, password: String) {
