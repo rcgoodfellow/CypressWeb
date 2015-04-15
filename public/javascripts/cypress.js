@@ -6,6 +6,14 @@
 var currentExp = "";
 var codeWindows = {};
 var exp_view = {};
+var sock = new WebSocket("wss://" + window.location.host + "/ws");
+
+sock.onmessage = function(msg) {
+    console.log("seckmess:");
+    exp_view = JSON.parse(msg.data);
+    console.log(exp_view);
+    drawModel();
+};
 
 function newExp() {
     $(".exp_preview_new")

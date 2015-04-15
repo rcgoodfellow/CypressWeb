@@ -41,7 +41,7 @@ function mirror_eval() {
                 "</div>");
             cs.scrollTop(cs.prop("scrollHeight"));
             console.log(data);
-            window.updateModel(expname);
+            //window.updateModel(expname);
         }
     );
 

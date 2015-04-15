@@ -2,6 +2,7 @@ package controllers
 
 import java.io.{ByteArrayOutputStream, File}
 
+import akka.actor.ActorRef
 import play.api.mvc._
 import models._
 import javax.script.{ScriptException, ScriptEngineManager}
@@ -9,6 +10,7 @@ import requests.Forms._
 import play.api.libs.json._
 import models.IO._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.Play.current
 
 import scala.concurrent.Future
 
@@ -125,12 +127,11 @@ object Application extends play.api.mvc.Controller {
     val user = request.session.get("user").get
 
     val src = form.get.source + ";"
-
-    //val exp = DB.users.get(user).get.find(x => x.name == form.get.exp).get
     val exp = db.get.experiments.find(x => x.name == form.get.exp).get
     E.put("_exp", exp)
     E.eval("val exp = _exp.asInstanceOf[Experiment]", ctx)
 
+    //boom.foreach(BoomSocketActor.shakalaka)
 
     val baos = new ByteArrayOutputStream
     Console.withOut(baos) {
@@ -138,6 +139,7 @@ object Application extends play.api.mvc.Controller {
         val eval_result = E.eval(src, ctx)
         if (eval_result != null) {
           db.get.save(exp)
+          boom.foreach(ak => ak ! Json.toJson(exp.views(0))(expViewClientWrites))
           Ok(eval_result.toString)
         }
         else {
@@ -191,5 +193,12 @@ object Application extends play.api.mvc.Controller {
     db.get.save(exp)
 
     Ok("")
+  }
+
+  private var boom : Option[ActorRef] = None
+
+  def ws = WebSocket.acceptWithActor[JsValue, JsValue] { request => out =>
+    boom = Some(out)
+    BoomSocketActor.props(out)
   }
 }
