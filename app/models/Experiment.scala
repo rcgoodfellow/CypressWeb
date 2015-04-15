@@ -79,14 +79,15 @@ object Controller {
   def read(x: JsValue) = Json.fromJson[Controller](x)
 }
 
-case class Interface(name: String, hostname: String, override val xy: CartesianCoord = CartesianCoord(15,0))
+case class Interface(name: String, hostname: String,
+  val substrates : L[String] = L(),
+  override val xy: CartesianCoord = CartesianCoord(15,0))
   extends VisualComponent {
-  val substrates = L[Substrate]()
   var host: Option[Host] = None
 
   override def toString = {
     "name: " + name + "\n" +
-    "substrates: " + substrates.map(_.name).mkString("[",",","]") + "\n" +
+    "substrates: " + substrates.mkString("[",",","]") + "\n" +
     "host: " + hostname + "\n"
   }
 
@@ -96,7 +97,7 @@ case class Interface(name: String, hostname: String, override val xy: CartesianC
   )
 
   def connect(s: Substrate): Interface = {
-    substrates += s
+    substrates += s.name
     s.interfaces += this
     this
   }
@@ -279,8 +280,8 @@ object IO {
     def writes(i: Interface) = Json.obj(
       "name" -> i.name,
       "host" -> i.hostname,
-      "xy" -> Json.toJson(i.xy),
-      "substrates" -> i.substrates.map(x => x.name)
+      "substrates" -> i.substrates,
+      "xy" -> Json.toJson(i.xy)
     )
   }
 
@@ -289,6 +290,7 @@ object IO {
   implicit val interfaceReads : Reads[Interface] = (
     (JsPath \ "name").read[String] and
     (JsPath \ "host").read[String] and
+    (JsPath \ "substrates").read[L[String]] and
     (JsPath \ "xy").read[CartesianCoord]
   )(Interface.apply _)
 
@@ -309,7 +311,8 @@ object IO {
   implicit val substrateWrites = new Writes[Substrate] {
     def writes(s: Substrate) = Json.obj(
       "name" -> s.name,
-      "interfaces" -> s.interfaces.map(_.getPath.map(x => Json.toJson(x))),
+      //"interfaces" -> s.interfaces.map(_.getPath.map(x => x.name)),
+      "interfaces" -> s.interfaces.map(x => Json.toJson(x)),
       "xy" -> Json.toJson(s.xy)
     )
   }
@@ -362,7 +365,6 @@ object IO {
   implicit val fActuator = Json.format[Actuator]
   implicit val fCLink = Json.format[CLink]
   implicit val fPLink = Json.format[PLink]
-  implicit val fSubstrate = Json.format[Substrate]
 
   implicit val expViewClientWrites = new Writes[ExperimentView] {
     def writes(exp: ExperimentView) = Json.obj(
