@@ -1,0 +1,1054 @@
+<?xml version="1.0"?>
+<xsd:schema targetNamespace="http://www.isi.edu/fedd_types"
+  xmlns:tns="http://www.isi.edu/fedd_types"
+  xmlns:topdl="http://www.isi.edu/topdl"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://www.w3.org/2000/10/XMLSchema">
+
+  <xsd:complexType name="IDType">
+    <xsd:annotation>
+      <xsd:documentation>
+	An ID is an identifier for a principal, service, or object.  This type
+	is currently polymorphic o allow different implementations of type,
+	though running code primarily uses localnames and fedids.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice>
+      <xsd:element name="uuid" type="xsd:base64Binary"/>
+      <xsd:element name="fedid" type="xsd:base64Binary"/>
+      <xsd:element name="uri" type="xsd:string"/>
+      <xsd:element name="localname" type="xsd:string"/>
+      <xsd:element name="kerberosUsername" type="xsd:string"/>
+    </xsd:choice>
+  </xsd:complexType>
+
+  <!-- begin deprecated -->
+
+  <xsd:complexType name="projectType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A description of the project used to access a testbed.  Includes
+	the testbed being accessed, the project name (often a local
+	name, scoped by the testbed), and any users who have been
+	granted access or for whom access is being requested.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="testbed" type="tns:IDType" minOccurs="0"
+	maxOccurs="1"/>
+      <xsd:element name="name" type="tns:IDType" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="user" type="tns:userType" minOccurs="0"
+	maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="projectAllocType">
+    <xsd:annotation>
+      <xsd:documentation>
+	The information needed to create a dynamic project, specifically
+	a project description and the resources in needs access to.
+	This is used by an internal fedd interface.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="project" type="tns:projectType"/>
+      <xsd:element name="resources" type="tns:resourcesType" 
+	minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="nodeType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A node from an Emulab.  It may have 0 or more images or hardware
+	types associated with it.  As this description is used for
+	acquiring access to the testbed in question, multiple images or
+	types are considered options.  Specifying multiple image names
+	indicates that the requester is looking for support for any of
+	them.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="image" type="xsd:string" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <xsd:element name="hardware" type="xsd:string" minOccurs="0"
+	maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="count" type="xsd:int" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="capacityType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A strawman network capacity description for access negotiation.
+	This will come to include more and more interesting parameters.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="rate" type="xsd:double"/>
+      <xsd:element name="kind" type="tns:kindType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+  <xsd:simpleType name="userRole">
+    <xsd:annotation>
+      <xsd:documentation>
+	This defines the role the user/account is playing in the
+	federated experiment.  An account being accessed by the
+	federation system to create the experiment is in the
+	experimentCreation role and the accounts that experimenters will
+	use to access local testbed services (e.g., rebooting a local
+	node) are serviceAccess roles.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="serviceAccess"/>
+      <xsd:enumeration value="experimentCreation"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="kindType">
+    <xsd:annotation>
+      <xsd:documentation>
+	An indication of how requested networking capacity is measured.
+	This will undoubtably expand.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="max"/>
+      <xsd:enumeration value="average"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="userType">
+    <xsd:annotation>
+      <xsd:documentation>
+	The definition of a user principal.  It includes the
+	identification of the user as an ID type, the access credential(s)
+	that the user will use, and the role of the user, if any.
+	Multiple access keys may be used, and it is also possible for
+	the user to be anonymous.  Though it is possible to specify a
+	user without ID, access, or role, it is difficult to imagine
+	such a user being useful.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="userID" type="tns:IDType" minOccurs="0"
+	maxOccurs="1"/>
+      <xsd:element name="access" type="tns:accessType" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <!-- begin deprecated -->
+      <xsd:element name="role" type="tns:userRole" minOccurs="0" maxOccurs="1"/>
+      <!-- end deprecated -->
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- end deprecated -->
+
+  <xsd:complexType name="proofType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A proof or partial proof of access rights
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="prover" type="xsd:string"/>
+      <xsd:element name="principal" type="xsd:string"/>
+      <xsd:element name="attribute" type="xsd:string"/>
+      <xsd:element name="credential" type="xsd:base64Binary" 
+	maxOccurs="unbounded" minOccurs="0"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:simpleType name="statusType">
+    <xsd:annotation>
+      <xsd:documentation>
+	The current state of the experiment.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="empty"/>
+      <xsd:enumeration value="active"/>
+      <xsd:enumeration value="inactive"/>
+      <xsd:enumeration value="starting"/>
+      <xsd:enumeration value="terminating"/>
+      <xsd:enumeration value="failed"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="accessType">
+    <xsd:annotation>
+      <xsd:documentation>
+	This captures an access credential that will be used to access
+	resources.  These are certificates or public keys.  The type is
+	used to designate the key to which access should be bound, or on
+	a reply has been bound.  Dynamic credentials where new keys have
+	been created may also be passed in this kind of field.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice>
+      <xsd:element name="X509" type="xsd:base64Binary"/>
+      <xsd:element name="sshPubkey" type="xsd:base64Binary"/>
+      <xsd:element name="pgpPubkey" type="xsd:base64Binary"/>
+      <xsd:element name="passwordHash" type="xsd:string"/>
+    </xsd:choice>
+  </xsd:complexType>
+
+  <xsd:complexType name="fedAttrType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A general attribute/value pair for passing federation parameters and
+	preferences.  Anything encodable in XML is allowed.  This is a
+	point for customization and extension.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="attribute" type="xsd:string"/>
+      <xsd:element name="value" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+  <xsd:complexType name="resourcesType">
+    <xsd:annotation>
+      <xsd:documentation>
+	The estimate of resources a requester is looking for, or the
+	response of a testbed indicating what it can provide.  This is
+	something of a placeholder for a full resource specification,
+	and alternative encodings are likely to be imported.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experimentdescription" 
+	type="tns:experimentDescriptionType" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="mapType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Explicit translation of testbed attribute in a federated experiment
+	description to the URI at which the controlling federation
+	system can be reached.  Used in a creation request.
+
+	This type allows tools to encode experiments in familiar local
+	names for experimenters while providing remote federation
+	systems the information to map the local name into a service
+	location.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="testbed" type="xsd:string"/>
+      <xsd:element name="uri" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <xsd:complexType name="vtoponodeType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Node in the virtual topology of a federated experiment (Emulab
+	legacy).  The fields are the local hostname and the IP addresses
+	of the experimental interfaces(colon-separated).
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="vname" type="xsd:string"/>
+      <xsd:element name="ips" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="vtopolanType">
+    <xsd:annotation>
+      <xsd:documentation>
+	LAN in the virtual topology of a federated experiment (Emulab legacy).
+	The fields are the name of the LAN/link (vname) the node that
+	this description applies to (vnode), the IP of the connection,
+	and performance information.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="vname" type="xsd:string"/>
+      <xsd:element name="vnode" type="xsd:string"/>
+      <xsd:element name="ip" type="xsd:string"/>
+      <xsd:element name="bandwidth" type="xsd:int"/>
+      <xsd:element name="delay" type="xsd:float"/>
+      <xsd:element name="member" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="vtopoType">
+    <xsd:annotation>
+      <xsd:documentation>
+	The virtual topology of a federated experiment (Emulab legacy).
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="node" type="tns:vtoponodeType" minOccurs="0" 
+	maxOccurs="unbounded" />
+      <xsd:element name="lan" type="tns:vtopolanType" minOccurs="0"
+	maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="visnodeType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Node in the visualization of a federated experiment (Emulab
+	legacy).  Fields include the local hostname of the node, x,y
+	coordinates in a 2-dimensional representation, and whether the
+	node in the visualization is a host or a LAN.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/>
+      <xsd:element name="x" type="xsd:int"/>
+      <xsd:element name="y" type="xsd:int"/>
+      <xsd:element name="type" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="visType">
+    <xsd:annotation>
+      <xsd:documentation>
+	The visualization of a federated experiment (Emulab legacy)
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="node" type="tns:visnodeType" minOccurs="0"
+	maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="experimentDescriptionType">
+    <xsd:annotation>
+      <xsd:documentation>
+	The description of the federated experiment, in extended ns2.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice>
+      <xsd:element name="ns2description" type="xsd:base64Binary"/>
+      <xsd:element name="topdldescription" type="topdl:topologyType"/>
+    </xsd:choice>
+  </xsd:complexType>
+
+  <xsd:simpleType name="connectionType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Known subexperiment interconnection mechanisms
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="ssh"/>
+      <xsd:enumeration value="transit"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="memberType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A member of a set of nodes for which transit is being provided
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="element" type="xsd:string"/>
+      <xsd:element name="interface" type="xsd:string" minOccurs="0" 
+	maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:simpleType name="connectionParameterIOType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Connection parameter types: input or output
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="input"/>
+      <xsd:enumeration value="output"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="connectionParameterType">
+    <xsd:annotation>
+      <xsd:documentation>
+	This is a parameter on which two or more access controllers have to
+	agree in order to complete the stitching.  This gives the name of the
+	parameter, the key under which to store it (or it has been stored)  and
+	whether it is to be input or output.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/>
+      <xsd:element name="key" type="xsd:string"/>
+      <xsd:element name="store" type="xsd:string"/>
+      <xsd:element name="type" type="tns:connectionParameterIOType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+  <xsd:complexType name="connectionInfoType">
+    <xsd:annotation>
+      <xsd:documentation>
+	The information needed to stitch together two segments.  It is both
+	exported from the nmaster and reported by the experiment controller to
+	the access controller and by the access controller into the world.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="type" type="tns:connectionType"/>
+      <xsd:element name="portal" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="peer" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="member" type="tns:memberType" minOccurs="0"
+	maxOccurs="unbounded" />
+      <xsd:element name="fedAttr" type="tns:fedAttrType" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <xsd:element name="parameter" type="tns:connectionParameterType"
+	minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="serviceInfoType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A generic service entry, basically a name and server
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="id" type="xsd:string" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="name" type="xsd:string"/>
+      <xsd:element name="server" type="xsd:string" minOccurs="0" 
+	maxOccurs="1"/>
+      <xsd:element name="fedAttr" type="tns:fedAttrType" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <xsd:element name="visibility" type="xsd:string">
+	<xsd:restriction>
+	  <xsd:enumeration value="export"/>	<!-- server -->
+	  <xsd:enumeration value="import"/>	<!-- client -->
+	  <xsd:enumeration value="composition"/><!-- both -->
+	</xsd:restriction>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="createServiceInfoType">
+    <xsd:annotation>
+      <xsd:documentation>
+	The global descriptions of services in the creation request.  These
+	indicate which services are being provided at a testbed level.  They
+	become service info requests in segment creation.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="id" type="xsd:string" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="name" type="xsd:string"/>
+      <xsd:element name="export" type="xsd:string" 
+	minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:choice>
+	<xsd:element name="import" type="xsd:string" 
+	  minOccurs="0" maxOccurs="unbounded"/>
+	<xsd:element name="importall" type="xsd:boolean"/>
+      </xsd:choice>
+      <xsd:element name="fedAttr" type="tns:fedAttrType" minOccurs="0"
+	maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="operationStatusType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Result of an operation.  The target, success or failure code and
+	descriptive text
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="target" type="xsd:string"/>
+      <xsd:element name="code" type="xsd:int">
+	<xsd:restriction>
+	  <xsd:enumeration value="0"/>	<!-- success -->
+	  <xsd:enumeration value="1"/>	<!-- access denied -->
+	  <xsd:enumeration value="2"/>	<!-- busy, retry -->
+	  <xsd:enumeration value="3"/>	<!-- not supported -->
+	  <xsd:enumeration value="4"/>	<!-- bad parameter -->
+	  <xsd:enumeration value="5"/>	<!-- internal error -->
+	  <xsd:enumeration value="6"/>	<!-- partial success -->
+	  <xsd:enumeration value="7"/>	<!-- no such target -->
+	  <xsd:enumeration value="8"/>	<!-- federant error -->
+	</xsd:restriction>
+      </xsd:element>
+      <xsd:element name="description" type="xsd:string" 
+	minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+  <xsd:complexType name="newRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request for an experiment to which credentials can be delegated and
+	resources attached.  A local name may be included as a human readable
+	accessor, local to this experiment controller.  It is a suggestion and
+	may be modified.  experimentID can only be a local name.
+
+	Credentials are seed credentials to begin the proof.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experimentAccess" type="tns:accessType" 
+	minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="experimentID" type="tns:IDType" minOccurs="0" 
+	maxOccurs="1"/>
+      <xsd:element name="credential" type="xsd:base64Binary" minOccurs="0" 
+	maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="newResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Result of a new experiment creation.  A successful sreation will have
+	an experimentState of "empty", 2 experimentIDs, one a fedid and one a
+	local name, and an experimentAccess that allows the creator to act as
+	the experiment.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experimentID" type="tns:IDType" minOccurs="0" 
+	maxOccurs="unbounded"/>
+      <xsd:element name="experimentStatus" type="tns:statusType"/>
+      <xsd:element name="experimentAccess" type="tns:accessType"/>
+      <xsd:element name="proof" type="tns:proofType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="accessRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request for access to a testbed.  It includes the testbed from
+	which resources are being requested (a single service may
+	provide access to many), the user or project requesting access
+	(a testbed making the request will leave both empty), the
+	resources needed, and scheduling information.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="credential" type="xsd:string" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <xsd:element name="abac_credential" type="xsd:base64Binary" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <xsd:element name="resources" type="tns:resourcesType" minOccurs="0" 
+	maxOccurs="1"/>
+      <xsd:element name="service" type="tns:serviceInfoType" minOccurs="0"
+	maxOccurs="unbounded" />
+      <xsd:element name="when" type="xsd:dateTime" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="until" type="xsd:dateTime" minOccurs="0" 
+	maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="accessResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Response to an access request.  Includes the allocation, the
+	information needed to access creation and experiment services
+	and scheduling information.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+      <xsd:element name="service" type="tns:serviceInfoType" minOccurs="0"
+	maxOccurs="unbounded" />
+      <xsd:element name="when" type="xsd:dateTime" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="until" type="xsd:dateTime" minOccurs="0" 
+	maxOccurs="1"/>
+      <xsd:element name="fedAttr" type="tns:fedAttrType" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <xsd:element name="proof" type="tns:proofType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="releaseRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A request to release the access rights allocated by an earlier 
+	RequestAccess call.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="releaseResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Indication that the access has been terminated.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+      <xsd:element name="proof" type="tns:proofType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="createRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A request to embed a federated experiment across testbeds.  Non-
+	standard local names for testbeds are included in the
+	testbedmap, the user making the request, the experiment
+	description, master testbed, and a suggested experiment name are
+	included.  More than one name can be suggested, either as
+	synonyms (a fedid and a localname) or as choices (multiple
+	localnames).
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="testbedmap" type="tns:mapType" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <xsd:element name="experimentdescription" 
+	type="tns:experimentDescriptionType"/>
+      <xsd:element name="service" type="tns:createServiceInfoType" minOccurs="0"
+	maxOccurs="unbounded" />
+      <xsd:element name="experimentID" type="tns:IDType"/>
+      <xsd:element name="credential" type="xsd:base64Binary" minOccurs="0" 
+	maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="createResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Returned to let the caller know that the request is underway.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experimentID" type="tns:IDType" minOccurs="1"
+	maxOccurs="unbounded"/>
+      <xsd:element name="experimentStatus" type="tns:statusType"/>
+      <xsd:element name="proof" type="tns:proofType" minOccurs="1" 
+	maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="vtopoRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request for an existing experiment's virtual topology.
+	Different information may be returned based on the user's rights
+	to see the topology.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experiment" type="tns:IDType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="vtopoResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	The response to a topology request.  Different information may
+	be returned based on the user's rights to see the topology.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experiment" type="tns:IDType"/>
+      <xsd:element name="vtopo" type="tns:vtopoType"/>
+      <xsd:element name="proof" type="tns:proofType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+  <xsd:complexType name="visRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request for an existing experiment's visualization.  This is
+	largely a compatibility service.  Different information may be
+	returned based on the user's rights to see the topology.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experiment" type="tns:IDType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="visResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	An existing experiment's visualization.  This is largely a
+	compatibility service.  Different information may be returned
+	based on the user's rights to see the topology.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experiment" type="tns:IDType"/>
+      <xsd:element name="vis" type="tns:visType"/>
+      <xsd:element name="proof" type="tns:proofType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="infoRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A combined topology, visualalization, and federant request.
+	Different information may be returned based on the user's rights
+	to see the topology.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experiment" type="tns:IDType"/>
+      <xsd:element name="legacy" type="xsd:boolean" 
+	minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="fresh" type="xsd:boolean" 
+	minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="infoResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Information on an instantiated experiment.  Different information may
+	be returned based on the user's rights to see the topology.  Includes
+	the information about federants hosting sub-experiments for service
+	access as well as virtual topology and visualization information.  All
+	that information is relative to the requester.  ExperimentAccess
+	includes credentials with which one can access the experiment.  These
+	may include a public key necessary to prove possession of the
+	credential and should be treated with care.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="vtopo" type="tns:vtopoType" minOccurs="0"
+	maxOccurs="1"/>
+      <xsd:element name="vis" type="tns:visType" minOccurs="0"
+	maxOccurs="1"/>
+      <xsd:element name="experimentID" type="tns:IDType" minOccurs="1"
+	maxOccurs="unbounded"/>
+      <xsd:element name="allocationLog" type="xsd:string" minOccurs="0" 
+	maxOccurs="1"/>
+      <xsd:element name="experimentStatus" type="tns:statusType"/>
+      <xsd:element name="experimentAccess" type="tns:accessType" minOccurs="0"
+	maxOccurs="1"/>
+      <xsd:element name="experimentdescription" 
+	type="tns:experimentDescriptionType" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="proof" type="tns:proofType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+  <xsd:complexType name="multiInfoRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Gets all information that this user can access on this fedd.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="multiInfoResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Multi info response.  A list of infoResponses
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="info" type="tns:infoResponseType" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <xsd:element name="proof" type="tns:proofType" minOccurs="0" 
+	maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="operationRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A request to operate on one or more elements of this experiment
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experiment" type="tns:IDType"/>
+      <xsd:element name="operation" type="xsd:string"/>
+      <xsd:element name="target" type="xsd:string"
+	minOccurs="1" maxOccurs="unbounded"/>
+      <xsd:element name="parameter" type="tns:fedAttrType"
+	minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="operationResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A status of requested operations.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experiment" type="tns:IDType"/>
+      <xsd:element name="status" type="tns:operationStatusType"
+	minOccurs="1" maxOccurs="unbounded"/>
+      <xsd:element name="proof" type="tns:proofType" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="terminateRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request to terminate an experiment.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experiment" type="tns:IDType"/>
+      <xsd:element name="force" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="terminateResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Indication that the experiment has been terminated.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experiment" type="tns:IDType"/>
+      <xsd:element name="deallocationLog" type="xsd:string" minOccurs="0"
+	maxOccurs="1"/>
+      <xsd:element name="proof" type="tns:proofType" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="startSegmentRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request a testbed to create a segment in the given allocation
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+      <xsd:element name="segmentdescription" 
+	type="tns:experimentDescriptionType"/>
+      <xsd:element name="service" type="tns:serviceInfoType" minOccurs="0"
+	maxOccurs="unbounded" />
+      <xsd:element name="connection" type="tns:connectionInfoType" 
+	minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="fedAttr" type="tns:fedAttrType" minOccurs="0"
+	maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="startSegmentResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Indication that the segment started successfully
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+      <xsd:element name="allocationLog" type="xsd:string" minOccurs="0"
+	maxOccurs="1"/>
+      <xsd:element name="segmentdescription" 
+	type="tns:experimentDescriptionType"/>
+      <xsd:element name="fedAttr" type="tns:fedAttrType" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <xsd:element name="proof" type="tns:proofType" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="terminateSegmentRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request to terminate an experiment.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+      <xsd:element name="force" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="terminateSegmentResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Indication that the experiment has been terminated.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+      <xsd:element name="deallocationLog" type="xsd:string" minOccurs="0"
+	maxOccurs="1"/>
+      <xsd:element name="proof" type="tns:proofType" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="infoSegmentRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request current status of the segment
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+  <xsd:complexType name="infoSegmentResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Current status of the allocation
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+      <xsd:element name="segmentdescription" 
+	type="tns:experimentDescriptionType" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="fedAttr" type="tns:fedAttrType" minOccurs="0"
+	maxOccurs="unbounded"/>
+      <xsd:element name="proof" type="tns:proofType" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="operationSegmentRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A request to operate on one or more elements of this segment (or the
+	whole segment)
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+      <xsd:element name="operation" type="xsd:string"/>
+      <xsd:element name="target" type="xsd:string"
+	minOccurs="1" maxOccurs="unbounded"/>
+      <xsd:element name="parameter" type="tns:fedAttrType"
+	minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="operationSegmentResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	A status of requested operations.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="allocID" type="tns:IDType"/>
+      <xsd:element name="status" type="tns:operationStatusType"
+	minOccurs="1" maxOccurs="unbounded"/>
+      <xsd:element name="proof" type="tns:proofType" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="ns2TopdlRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request to run the CEDL to topdl translator remotely.  This is
+	primarily an internal interface.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="description" type="tns:experimentDescriptionType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="ns2TopdlResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Translator splitter output.  Also an internal interface
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="experimentdescription" 
+	type="tns:experimentDescriptionType"/>
+      <xsd:element name="proof" type="tns:proofType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="setValueRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request to set a shared value.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/> 
+      <xsd:element name="value" type="xsd:string"/> 
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="setValueResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request to set a shared value.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/> 
+      <xsd:element name="value" type="xsd:string"/> 
+      <xsd:element name="proof" type="tns:proofType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="getValueRequestType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request to set a shared value.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/> 
+      <xsd:element name="wait" type="xsd:boolean"/> 
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="getValueResponseType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Request to set a shared value.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/> 
+      <xsd:element name="value" type="xsd:string" minOccurs="0" maxOccurs="1"/> 
+      <xsd:element name="proof" type="tns:proofType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="faultType">
+    <xsd:annotation>
+      <xsd:documentation>
+	Indication that a service has failed.  The code values are
+
+	  1 access denied
+	  2 proxy error
+	  3 badly formed request
+	  4 server configuration error
+	  5 internal error
+	  6 partial instantiation
+	  7 federant error
+
+	Errstr contains the text above corresponding to the code.  Code
+	is always present.  Desc provides additional human-readable data
+	about the error.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="code" type="xsd:int">
+	<xsd:restriction>
+	  <xsd:enumeration value="1"/>	<!-- access denied -->
+	  <xsd:enumeration value="2"/>	<!-- protocol error -->
+	  <xsd:enumeration value="3"/>	<!-- badly formed request -->
+	  <xsd:enumeration value="4"/>	<!-- server configuration error -->
+	  <xsd:enumeration value="5"/>	<!-- internal error -->
+	  <xsd:enumeration value="6"/>	<!-- partial instantiation -->
+	  <xsd:enumeration value="7"/>	<!-- federant error -->
+	  <xsd:enumeration value="8"/>  <!-- connect error -->
+	</xsd:restriction>
+      </xsd:element>
+      <xsd:element name="errstr" minOccurs="0" maxOccurs="1" type="xsd:string">
+      </xsd:element>
+      <xsd:element name="desc" type="xsd:string"/>
+      <xsd:element name="proof" type="tns:proofType" 
+	minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

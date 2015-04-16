@@ -1,0 +1,672 @@
+<?xml version="1.0"?>
+<definitions name="fedd"
+  targetNamespace="http://www.isi.edu/fedd.wsdl"
+  xmlns:tns="http://www.isi.edu/fedd.wsdl"
+  xmlns:xsd1="http://www.isi.edu/fedd_types"
+  xmlns:topdl="http://www.isi.edu/topdl"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+   <import namespace="http://www.isi.edu/fedd_types" location="fedd_types.xsd"/>
+
+   <import namespace="http://www.isi.edu/topdl" location="topdl.xsd"/>
+  <!--
+  The message definitions are all simple embeddings of one of the types
+  from fedd_types.xsd 
+  -->
+  <message name="RequestAccessRequestMessage">
+    <part name="requestAccessRequestBody" type="xsd1:accessRequestType"/>
+  </message>
+
+  <message name="RequestAccessResponseMessage">
+    <part name="requestAccessResponseBody" type="xsd1:accessResponseType"/>
+  </message>
+
+  <message name="ReleaseAccessRequestMessage">
+    <part name="releaseAccessRequestBody" type="xsd1:releaseRequestType"/>
+  </message>
+
+  <message name="ReleaseAccessResponseMessage">
+    <part name="releaseAccessResponseBody" type="xsd1:releaseResponseType"/>
+  </message>
+
+  <message name="NewRequestMessage">
+    <part name="newRequestBody" type="xsd1:newRequestType"/>
+  </message>
+
+  <message name="NewResponseMessage">
+    <part name="newResponseBody" type="xsd1:newResponseType"/>
+  </message>
+
+
+  <message name="CreateRequestMessage">
+    <part name="createRequestBody" type="xsd1:createRequestType"/>
+  </message>
+
+  <message name="CreateResponseMessage">
+    <part name="createResponseBody" type="xsd1:createResponseType"/>
+  </message>
+
+  <message name="VtopoRequestMessage">
+    <part name="vtopoRequestBody" type="xsd1:vtopoRequestType"/>
+  </message>
+
+  <message name="VtopoResponseMessage">
+    <part name="vtopoResponseBody" type="xsd1:vtopoResponseType"/>
+  </message>
+
+  <message name="VisRequestMessage">
+    <part name="visRequestBody" type="xsd1:visRequestType"/>
+  </message>
+
+  <message name="VisResponseMessage">
+    <part name="visResponseBody" type="xsd1:visResponseType"/>
+  </message>
+
+  <message name="InfoRequestMessage">
+    <part name="infoRequestBody" type="xsd1:infoRequestType"/>
+  </message>
+
+  <message name="InfoResponseMessage">
+    <part name="infoResponseBody" type="xsd1:infoResponseType"/>
+  </message>
+
+  <message name="OperationRequestMessage">
+    <part name="operationRequestBody" type="xsd1:operationRequestType"/>
+  </message>
+
+  <message name="OperationResponseMessage">
+    <part name="operationResponseBody" type="xsd1:operationResponseType"/>
+  </message>
+
+  <message name="MultiInfoRequestMessage">
+    <part name="multiInfoRequestBody" type="xsd1:multiInfoRequestType"/>
+  </message>
+
+  <message name="MultiInfoResponseMessage">
+    <part name="multiInfoResponseBody" type="xsd1:multiInfoResponseType"/>
+  </message>
+
+  <message name="TerminateRequestMessage">
+    <part name="terminateRequestBody" type="xsd1:terminateRequestType"/>
+  </message>
+
+  <message name="TerminateResponseMessage">
+    <part name="terminateResponseBody" type="xsd1:terminateResponseType"/>
+  </message>
+
+  <message name="StartSegmentRequestMessage">
+    <part name="startSegmentRequestBody" type="xsd1:startSegmentRequestType"/>
+  </message>
+
+  <message name="StartSegmentResponseMessage">
+    <part name="startSegmentResponseBody" type="xsd1:startSegmentResponseType"/>
+  </message>
+
+  <message name="TerminateSegmentRequestMessage">
+    <part name="terminateSegmentRequestBody"
+      type="xsd1:terminateSegmentRequestType"/>
+  </message>
+
+  <message name="TerminateSegmentResponseMessage">
+    <part name="terminateSegmentResponseBody"
+      type="xsd1:terminateSegmentResponseType"/>
+  </message>
+
+  <message name="InfoSegmentRequestMessage">
+    <part name="infoSegmentRequestBody"
+      type="xsd1:infoSegmentRequestType"/>
+  </message>
+
+  <message name="InfoSegmentResponseMessage">
+    <part name="infoSegmentResponseBody"
+      type="xsd1:infoSegmentResponseType"/>
+  </message>
+
+  <message name="OperationSegmentRequestMessage">
+    <part name="operationSegmentRequestBody"
+      type="xsd1:operationSegmentRequestType"/>
+  </message>
+
+  <message name="OperationSegmentResponseMessage">
+    <part name="operationSegmentResponseBody"
+      type="xsd1:operationSegmentResponseType"/>
+  </message>
+
+  <message name="SetValueRequestMessage">
+    <part name="setValueRequestBody" type="xsd1:setValueRequestType"/>
+  </message>
+
+  <message name="SetValueResponseMessage">
+    <part name="setValueResponseBody" type="xsd1:setValueResponseType"/>
+  </message>
+
+  <message name="GetValueRequestMessage">
+    <part name="getValueRequestBody" type="xsd1:getValueRequestType"/>
+  </message>
+
+  <message name="GetValueResponseMessage">
+    <part name="getValueResponseBody" type="xsd1:getValueResponseType"/>
+  </message>
+
+  <message name="FaultMessage">
+    <part name="faultBody" type="xsd1:faultType"/>
+  </message>
+
+  <portType name="feddPortType">
+    <operation name="RequestAccess">
+      <documentation>
+	Request access to a testbed.  The request includes the various
+	resources needed (loosely), the identity of the requester, access
+	credentials andscheduling information.  A successful response includes
+	enough information for the federation system to access the testbed and
+	actually request resources.
+      </documentation>
+      <input message="tns:RequestAccessRequestMessage"/>
+      <output message="tns:RequestAccessResponseMessage"/>
+      <fault name="RequestAccessFeddFault" message="tns:FaultMessage"/>
+    </operation>
+    <operation name="ReleaseAccess">
+      <documentation>
+	Release an allocation of access to a testbed. This informs the testbed
+	that it is no longer necessary to allow the access mthods negotiated by
+	a RequestAccess cal.
+      </documentation>
+      <input message="tns:ReleaseAccessRequestMessage"/>
+      <output message="tns:ReleaseAccessResponseMessage"/>
+      <fault name="ReleaseAccessFeddFault" message="tns:FaultMessage"/>
+    </operation>
+    <operation name="New">
+      <documentation>
+	A request to create a federated experiment in an empty state so
+	resources can be attached and attributes delegated.  On success the
+	identity of the new experiment is returned.
+      </documentation>
+      <input message="tns:NewRequestMessage"/>
+      <output message="tns:NewResponseMessage"/>
+      <fault name="NewFeddFault" message="tns:FaultMessage"/>
+    </operation>
+    <operation name="Create">
+      <documentation>
+	A request to create a federated experiment from the included
+	description.  Credentials and access information is also provided.  On
+	success a logical description of the experiment is returned as well as
+	the information about federated testbeds needed to access local
+	services.
+      </documentation>
+      <input message="tns:CreateRequestMessage"/>
+      <output message="tns:CreateResponseMessage"/>
+      <fault name="CreateFeddFault" message="tns:FaultMessage"/>
+    </operation>
+    <operation name="Vtopo">
+      <documentation>
+	A request for the virtual topology of the experiment.  Requesters with
+	different access rights may receive different information.
+      </documentation>
+      <input message="tns:VtopoRequestMessage"/>
+      <output message="tns:VtopoResponseMessage"/>
+      <fault name="VtopoFeddFault" message="tns:FaultMessage"/>
+    </operation>
+    <operation name="Vis">
+      <documentation>
+	A request for the visualization of the experiment.  This is really a
+	legacy interface for visual tools that cannot generate their own
+	visualization.  Requesters with different access rights may receive
+	different information.
+      </documentation>
+      <input message="tns:VisRequestMessage"/>
+      <output message="tns:VisResponseMessage"/>
+      <fault name="VisFeddFault" message="tns:FaultMessage"/>
+    </operation>
+
+    <operation name="Info">
+      <documentation>
+	A one-stop request for meta-data on the experiment.  Includes all the
+	info from a Vtopo and a Vis request.
+      </documentation>
+      <input message="tns:InfoRequestMessage"/>
+      <output message="tns:InfoResponseMessage"/>
+      <fault name="InfoFeddFault" message="tns:FaultMessage"/>
+    </operation>
+
+
+    <operation name="Operation">
+      <documentation>
+	A one-stop request for meta-data on the experiment.  Includes all the
+	info from a Vtopo and a Vis request.
+      </documentation>
+      <input message="tns:OperationRequestMessage"/>
+      <output message="tns:OperationResponseMessage"/>
+      <fault name="OperationFeddFault" message="tns:FaultMessage"/>
+    </operation>
+
+    <operation name="MultiInfo">
+      <documentation>
+	A one-stop request for meta-data on the experiment.  Includes all the
+	info from a Vtopo and a Vis request.
+      </documentation>
+      <input message="tns:MultiInfoRequestMessage"/>
+      <output message="tns:MultiInfoResponseMessage"/>
+      <fault name="MultiInfoFeddFault" message="tns:FaultMessage"/>
+    </operation>
+
+    <operation name="Terminate">
+      <documentation>
+	Stop this experiment and deallocate its resources.
+      </documentation>
+      <input message="tns:TerminateRequestMessage"/>
+      <output message="tns:TerminateResponseMessage"/>
+      <fault name="TerminateFeddFault" message="tns:FaultMessage"/>
+    </operation>
+
+    <operation name="StartSegment">
+      <documentation>
+	Start a segment of an experiment on a federant
+      </documentation>
+      <input message="tns:StartSegmentRequestMessage"/>
+      <output message="tns:StartSegmentResponseMessage"/>
+      <fault name="StartSegmentFeddFault" message="tns:FaultMessage"/>
+    </operation>
+
+    <operation name="TerminateSegment">
+      <documentation>
+	Start a segment of an experiment on a federant
+      </documentation>
+      <input message="tns:TerminateSegmentRequestMessage"/>
+      <output message="tns:TerminateSegmentResponseMessage"/>
+      <fault name="TerminateSegmentFeddFault" message="tns:FaultMessage"/>
+    </operation>
+
+    <operation name="InfoSegment">
+      <documentation>
+	Get info about a segment
+      </documentation>
+      <input message="tns:InfoSegmentRequestMessage"/>
+      <output message="tns:InfoSegmentResponseMessage"/>
+      <fault name="InfoSegmentFeddFault" message="tns:FaultMessage"/>
+    </operation>
+
+    <operation name="OperationSegment">
+      <documentation>
+	Get info about a segment
+      </documentation>
+      <input message="tns:OperationSegmentRequestMessage"/>
+      <output message="tns:OperationSegmentResponseMessage"/>
+      <fault name="OperationSegmentFeddFault" message="tns:FaultMessage"/>
+    </operation>
+
+    <operation name="SetValue">
+      <documentation>
+	Set a shared value 
+      </documentation>
+      <input message="tns:SetValueRequestMessage"/>
+      <output message="tns:SetValueResponseMessage"/>
+      <fault name="SetValueFeddFault" message="tns:FaultMessage"/>
+    </operation>
+
+    <operation name="GetValue">
+      <documentation>
+	Get a shared value
+      </documentation>
+      <input message="tns:GetValueRequestMessage"/>
+      <output message="tns:GetValueResponseMessage"/>
+      <fault name="GetValueFeddFault" message="tns:FaultMessage"/>
+    </operation>
+  </portType>
+
+  <binding name="feddBinding" type="tns:feddPortType">
+      <documentation>
+	These are really very straight ahead SOAP RPC bindings.  They're 1.1
+	SOAP and not much outside the defaults.  No interesting header packing
+	or fault configuration yet.
+      </documentation>
+    <soap:binding style="rpc" 
+      transport="http://schemas.xmlsoap.org/soap/http"/>
+      <operation name="RequestAccess">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="RequestAccess"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:RequestAccessRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:RequestAccessResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="RequestAccessFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="ReleaseAccess">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="ReleaseAccess"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:ReleaseAccessRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:ReleaseAccessResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="ReleaseAccessFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="New">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="New"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:NewRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:NewResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="NewFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="Create">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="Create"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:CreateRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:CreateResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="CreateFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="Vtopo">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="Vtopo"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:VtopoRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:VtopoResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="VtopoFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+
+      <operation name="Vis">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="Vis"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:VisRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:VisResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="VisFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="Info">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="Info"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:InfoRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:InfoResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="InfoFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="Operation">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="Operation"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:OperationRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:OperationResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="OperationFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="MultiInfo">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="MultiInfo"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:MultiInfoRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:MultiInfoResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="MultiInfoFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="Terminate">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="Terminate"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:TerminateRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:TerminateResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="TerminateFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="StartSegment">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="StartSegment"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:StartSegmentRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:StartSegmentResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="StartSegmentFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="TerminateSegment">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="TerminateSegment"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:TerminateSegmentRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:TerminateSegmentResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="TerminateSegmentFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="InfoSegment">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="InfoSegment"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:InfoSegmentRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:InfoSegmentResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="InfoSegmentFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="OperationSegment">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="OperationSegment"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:OperationSegmentRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:OperationSegmentResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="OperationSegmentFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="SetValue">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="SetValue"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:SetValueRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:SetValueResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="SetValueFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+      <operation name="GetValue">
+	<documentation>
+	  The bindings of this operation are straightforward SOAP RPC 1.1.
+	</documentation>
+	<soap:operation soapAction="GetValue"/> 
+	<input>
+	  <soap:body use="literal" parts="tns:GetValueRequestBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</input>
+	<output>
+	  <soap:body use="literal" parts="tns:GetValueResponseBody"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</output>
+	<fault name="GetValueFeddFault">
+	  <soap:fault use="literal"  name="tns:FeddFault"
+	    namespace="http://www.isi.edu/fedd.wsdl"
+	    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+	</fault>
+      </operation>
+    </binding>
+
+    <service name="feddService">
+      <documentation>
+	Fedd resource access service
+      </documentation>
+      <port name="feddPort" binding="tns:feddBinding">
+	<soap:address location="http://www.isi.edu/fedd"/>
+      </port>
+    </service>
+</definitions>
