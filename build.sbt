@@ -25,6 +25,7 @@ libraryDependencies ++= Seq(
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )
 
+
 lazy val `cypressweb` = (project in file(".")).
   enablePlugins(PlayScala).
   settings(scalaxbSettings : _*).
@@ -33,4 +34,4 @@ lazy val `cypressweb` = (project in file(".")).
     dispatchVersion in (Compile, scalaxb) := dispatchV,
     async in (Compile, scalaxb) := true,
     packageName in (Compile, scalaxb) := "generated"
-)
+  )

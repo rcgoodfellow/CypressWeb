@@ -12,10 +12,11 @@ import javax.net.ssl.{TrustManagerFactory, X509TrustManager, TrustManager, KeyMa
 
 import com.ning.http.client.{AsyncHttpClientConfig, AsyncHttpClient}
 import dispatch.Http
-import generated.MultiInfoRequestType
+import generated.{IDType, NewRequestType, MultiInfoRequestType}
+import models.Experiment
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scalaxb.HttpClientsAsync
+import scalaxb.{DataRecord, ElemName, HttpClientsAsync}
 
 class X509Http extends Http {
   val ks = KeyStore.getInstance("JKS")
@@ -66,7 +67,17 @@ trait X509DispatchHttpClientsAsync extends HttpClientsAsync {
 }
 
 
+//noinspection LanguageFeature
+
+object Helpers {
+  import generated._
+
+  def localname(name: String) = IDType(DataRecord(None, Some("localname"), name))
+}
+
 object FeddQ {
+
+  import generated._
 
   System.setProperty("javax.net.ssl.keyStore", "/Users/ry/keystore.ImportKey")
   System.setProperty("javax.net.ssl.keyStorePassword", "importkey")
@@ -79,23 +90,67 @@ object FeddQ {
   val svc = client.service
 
   def multiStatus() {
-    println("multistatus --> " + client.baseAddress)
 
     val req = MultiInfoRequestType()
-
-    val defaultScope = scalaxb.toScope(Some("tns") -> "http://www.isi.edu/fedd_types",
-      Some("tns0") -> "http://www.isi.edu/fedd.wsdl",
-      Some("topdl") -> "http://www.isi.edu/topdl",
-      Some("xs") -> "http://www.w3.org/2001/XMLSchema",
-      Some("xsi") -> "http://www.w3.org/2001/XMLSchema-instance")
-
-    val xml = scalaxb.toXML(req, Some("http://www.isi.edu/fedd.wsdl"), "MultiInfoRequestBody", defaultScope)
-    println(xml)
-
-    val fresponse = svc.multiInfo(MultiInfoRequestType())
-    val response = Await.result(fresponse, 15 seconds)
-    response.info foreach { ix =>
-      println(ix.experimentID.last.toString + ix.experimentStatus.toString)
+    val res = Await.result(svc.multiInfo(req), 15 seconds)
+    res.info foreach {
+      ix => println(
+        ix.experimentID.last.idtypeoption.value + ": "  +
+        ix.experimentStatus.toString
+      )
     }
   }
+
+  def `new`(name: String) {
+
+    val expAccess = None
+    val expName = Some(Helpers.localname(name))
+
+    val req = NewRequestType(expAccess, expName)
+    val res = Await.result(svc.`new`(req), 15 seconds)
+
+    println(res.experimentStatus)
+
+  }
+
+  def terminate(name: String, force: Option[Boolean] = Some(false)) {
+
+    val expName = Helpers.localname(name)
+
+    val req = TerminateRequestType(expName, force)
+    val res = Await.result(svc.terminate(req), 15 seconds)
+
+    res.deallocationLog.foreach(x => println(x))
+
+  }
+
+  def create(exp: Experiment) {
+
+    val tdl = TopDLGen(exp)
+
+    val xpd =
+      ExperimentDescriptionType(
+        DataRecord(None, Some("topdldescription"), tdl))
+
+    val req = CreateRequestType(
+      testbedmap = Nil,
+      experimentdescription = xpd,
+      service = Nil,
+      Helpers.localname(exp.name),
+      credential = Nil)
+
+    val res = Await.result(svc.create(req), 15 seconds)
+
+    println(res.experimentStatus)
+  }
+
+}
+
+object TopDLGen {
+  import generated._
+
+  def apply(exp: Experiment) : TopologyType = {
+    ???
+  }
+
 }

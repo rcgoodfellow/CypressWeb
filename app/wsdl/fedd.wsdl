@@ -15,142 +15,142 @@
   from fedd_types.xsd 
   -->
   <message name="RequestAccessRequestMessage">
-    <part name="requestAccessRequestBody" type="xsd1:accessRequestType"/>
+    <part name="RequestAccessRequestBody" type="xsd1:accessRequestType"/>
   </message>
 
   <message name="RequestAccessResponseMessage">
-    <part name="requestAccessResponseBody" type="xsd1:accessResponseType"/>
+    <part name="RequestAccessResponseBody" type="xsd1:accessResponseType"/>
   </message>
 
   <message name="ReleaseAccessRequestMessage">
-    <part name="releaseAccessRequestBody" type="xsd1:releaseRequestType"/>
+    <part name="ReleaseAccessRequestBody" type="xsd1:releaseRequestType"/>
   </message>
 
   <message name="ReleaseAccessResponseMessage">
-    <part name="releaseAccessResponseBody" type="xsd1:releaseResponseType"/>
+    <part name="ReleaseAccessResponseBody" type="xsd1:releaseResponseType"/>
   </message>
 
   <message name="NewRequestMessage">
-    <part name="newRequestBody" type="xsd1:newRequestType"/>
+    <part name="NewRequestBody" type="xsd1:newRequestType"/>
   </message>
 
   <message name="NewResponseMessage">
-    <part name="newResponseBody" type="xsd1:newResponseType"/>
+    <part name="NewResponseBody" type="xsd1:newResponseType"/>
   </message>
 
 
   <message name="CreateRequestMessage">
-    <part name="createRequestBody" type="xsd1:createRequestType"/>
+    <part name="CreateRequestBody" type="xsd1:createRequestType"/>
   </message>
 
   <message name="CreateResponseMessage">
-    <part name="createResponseBody" type="xsd1:createResponseType"/>
+    <part name="CreateResponseBody" type="xsd1:createResponseType"/>
   </message>
 
   <message name="VtopoRequestMessage">
-    <part name="vtopoRequestBody" type="xsd1:vtopoRequestType"/>
+    <part name="VtopoRequestBody" type="xsd1:vtopoRequestType"/>
   </message>
 
   <message name="VtopoResponseMessage">
-    <part name="vtopoResponseBody" type="xsd1:vtopoResponseType"/>
+    <part name="VtopoResponseBody" type="xsd1:vtopoResponseType"/>
   </message>
 
   <message name="VisRequestMessage">
-    <part name="visRequestBody" type="xsd1:visRequestType"/>
+    <part name="VisRequestBody" type="xsd1:visRequestType"/>
   </message>
 
   <message name="VisResponseMessage">
-    <part name="visResponseBody" type="xsd1:visResponseType"/>
+    <part name="VisResponseBody" type="xsd1:visResponseType"/>
   </message>
 
   <message name="InfoRequestMessage">
-    <part name="infoRequestBody" type="xsd1:infoRequestType"/>
+    <part name="InfoRequestBody" type="xsd1:infoRequestType"/>
   </message>
 
   <message name="InfoResponseMessage">
-    <part name="infoResponseBody" type="xsd1:infoResponseType"/>
+    <part name="InfoResponseBody" type="xsd1:infoResponseType"/>
   </message>
 
   <message name="OperationRequestMessage">
-    <part name="operationRequestBody" type="xsd1:operationRequestType"/>
+    <part name="OperationRequestBody" type="xsd1:operationRequestType"/>
   </message>
 
   <message name="OperationResponseMessage">
-    <part name="operationResponseBody" type="xsd1:operationResponseType"/>
+    <part name="OperationResponseBody" type="xsd1:operationResponseType"/>
   </message>
 
   <message name="MultiInfoRequestMessage">
-    <part name="multiInfoRequestBody" type="xsd1:multiInfoRequestType"/>
+    <part name="MultiInfoRequestBody" type="xsd1:multiInfoRequestType"/>
   </message>
 
   <message name="MultiInfoResponseMessage">
-    <part name="multiInfoResponseBody" type="xsd1:multiInfoResponseType"/>
+    <part name="MultiInfoResponseBody" type="xsd1:multiInfoResponseType"/>
   </message>
 
   <message name="TerminateRequestMessage">
-    <part name="terminateRequestBody" type="xsd1:terminateRequestType"/>
+    <part name="TerminateRequestBody" type="xsd1:terminateRequestType"/>
   </message>
 
   <message name="TerminateResponseMessage">
-    <part name="terminateResponseBody" type="xsd1:terminateResponseType"/>
+    <part name="TerminateResponseBody" type="xsd1:terminateResponseType"/>
   </message>
 
   <message name="StartSegmentRequestMessage">
-    <part name="startSegmentRequestBody" type="xsd1:startSegmentRequestType"/>
+    <part name="StartSegmentRequestBody" type="xsd1:startSegmentRequestType"/>
   </message>
 
   <message name="StartSegmentResponseMessage">
-    <part name="startSegmentResponseBody" type="xsd1:startSegmentResponseType"/>
+    <part name="StartSegmentResponseBody" type="xsd1:startSegmentResponseType"/>
   </message>
 
   <message name="TerminateSegmentRequestMessage">
-    <part name="terminateSegmentRequestBody"
+    <part name="TerminateSegmentRequestBody"
       type="xsd1:terminateSegmentRequestType"/>
   </message>
 
   <message name="TerminateSegmentResponseMessage">
-    <part name="terminateSegmentResponseBody"
+    <part name="TerminateSegmentResponseBody"
       type="xsd1:terminateSegmentResponseType"/>
   </message>
 
   <message name="InfoSegmentRequestMessage">
-    <part name="infoSegmentRequestBody"
+    <part name="InfoSegmentRequestBody"
       type="xsd1:infoSegmentRequestType"/>
   </message>
 
   <message name="InfoSegmentResponseMessage">
-    <part name="infoSegmentResponseBody"
+    <part name="InfoSegmentResponseBody"
       type="xsd1:infoSegmentResponseType"/>
   </message>
 
   <message name="OperationSegmentRequestMessage">
-    <part name="operationSegmentRequestBody"
+    <part name="OperationSegmentRequestBody"
       type="xsd1:operationSegmentRequestType"/>
   </message>
 
   <message name="OperationSegmentResponseMessage">
-    <part name="operationSegmentResponseBody"
+    <part name="OperationSegmentResponseBody"
       type="xsd1:operationSegmentResponseType"/>
   </message>
 
   <message name="SetValueRequestMessage">
-    <part name="setValueRequestBody" type="xsd1:setValueRequestType"/>
+    <part name="SetValueRequestBody" type="xsd1:setValueRequestType"/>
   </message>
 
   <message name="SetValueResponseMessage">
-    <part name="setValueResponseBody" type="xsd1:setValueResponseType"/>
+    <part name="SetValueResponseBody" type="xsd1:setValueResponseType"/>
   </message>
 
   <message name="GetValueRequestMessage">
-    <part name="getValueRequestBody" type="xsd1:getValueRequestType"/>
+    <part name="GetValueRequestBody" type="xsd1:getValueRequestType"/>
   </message>
 
   <message name="GetValueResponseMessage">
-    <part name="getValueResponseBody" type="xsd1:getValueResponseType"/>
+    <part name="GetValueResponseBody" type="xsd1:getValueResponseType"/>
   </message>
 
   <message name="FaultMessage">
-    <part name="faultBody" type="xsd1:faultType"/>
+    <part name="FaultBody" type="xsd1:faultType"/>
   </message>
 
   <portType name="feddPortType">
