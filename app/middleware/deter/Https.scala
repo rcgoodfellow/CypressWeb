@@ -5,7 +5,7 @@ package middleware.deter
  * Created by ry on 4/15/15.
  */
 
-import java.io.{OutputStream, File, FileInputStream}
+import java.io.{ByteArrayOutputStream, OutputStream, File, FileInputStream}
 import java.security.{SecureRandom, KeyStore}
 import java.security.cert.X509Certificate
 import javax.net.ssl.{TrustManagerFactory, X509TrustManager, TrustManager, KeyManagerFactory}
@@ -77,10 +77,16 @@ object Helpers {
 
   def localname(name: String) = IDType(DataRecord(None, Some("localname"), name))
 
-  def delegate(id: Identity, dest: String) : X509Credential = {
-    val c = new X509Credential(new Role(id.getKeyID + ".acting_for"), new Role(dest))
+  def delegate(id: Identity, dest: String) : Credential = {
+
+    val a = new Role(id.getKeyID + ".acting_for")
+    val b = new Role(dest)
+    //val c = new X509Credential(a,b)
+    val ctx = new Context()
+    val c = ctx.newCredential(a, b)
     c.make_cert(id)
     c
+
   }
 }
 
@@ -123,11 +129,11 @@ object FeddQ {
     res
   }
 
-  def terminate(name: String, force: Option[Boolean] = Some(false)) = {
+  def terminate(name: String, force: Boolean = false) = {
 
     val expName = Helpers.localname(name)
 
-    val req = TerminateRequestType(expName, force)
+    val req = TerminateRequestType(expName, Some(force))
     val res = Await.result(svc.terminate(req), 15 seconds)
 
     res.deallocationLog.foreach(x => println(x))
@@ -141,7 +147,8 @@ object FeddQ {
 
     val proj = CreateServiceInfoType(
       name="project_export",
-      fedAttr = Seq(FedAttrType("project", "GridStat"))
+      fedAttr = Seq(FedAttrType("project", "GridStat")),
+      export = Seq("deter")
     )
 
     val tdl = TopDLGen(exp)
@@ -150,18 +157,19 @@ object FeddQ {
       ExperimentDescriptionType(
         DataRecord(None, Some("topdldescription"), tdl))
 
-    val AbacID : Identity = new Identity(new File("/Users/ry/.ssl/emulab.pem"))
-    val ca: Array[Array[Byte]] = Array(Array(),Array())
-    ca(0) = AbacID.getCertificate.getEncoded
+    val AbacID : Identity = new Identity(new File("/Users/ry/.ssl/fedid.pem"))
     val fedid =
       newRes.experimentID.find(x =>
         x.idtypeoption.key.getOrElse(false) == "fedid").get.idtypeoption.value.toString
 
+    val c : Credential = Helpers.delegate(AbacID, fedid)
+    val bao = new ByteArrayOutputStream()
+    c.write(bao)
 
-    val c : X509Credential = Helpers.delegate(AbacID, fedid)
-    ca(1) = c.issuer().getCertificate.getEncoded
-
-    val b64 = Base64Binary(ca.flatten : _*)
+    val ca = Seq(
+      Base64Binary(AbacID.getCertificate.getEncoded: _*),
+      Base64Binary(bao.toByteArray: _*)
+    )
 
     val req = CreateRequestType(
       testbedmap = Nil,
@@ -169,7 +177,7 @@ object FeddQ {
       service = Seq(proj),
       experimentID = newRes.experimentID.find(x =>
         x.idtypeoption.key.getOrElse(false) == "localname").get,
-      credential = Seq(b64))
+      credential = ca)
 
     val res = Await.result(svc.create(req), 15 seconds)
 
