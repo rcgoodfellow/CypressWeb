@@ -5,7 +5,7 @@ package middleware.deter
  * Created by ry on 4/15/15.
  */
 
-import java.io.FileInputStream
+import java.io.{OutputStream, File, FileInputStream}
 import java.security.{SecureRandom, KeyStore}
 import java.security.cert.X509Certificate
 import javax.net.ssl.{TrustManagerFactory, X509TrustManager, TrustManager, KeyManagerFactory}
@@ -16,7 +16,10 @@ import generated.{IDType, NewRequestType, MultiInfoRequestType}
 import models.Experiment
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scalaxb.{DataRecord, ElemName, HttpClientsAsync}
+import scala.xml.NamespaceBinding
+import scalaxb.{Base64Binary, DataRecord, ElemName, HttpClientsAsync}
+
+import net.deterlab.abac._
 
 class X509Http extends Http {
   val ks = KeyStore.getInstance("JKS")
@@ -73,6 +76,12 @@ object Helpers {
   import generated._
 
   def localname(name: String) = IDType(DataRecord(None, Some("localname"), name))
+
+  def delegate(id: Identity, dest: String) : X509Credential = {
+    val c = new X509Credential(new Role(id.getKeyID + ".acting_for"), new Role(dest))
+    c.make_cert(id)
+    c
+  }
 }
 
 object FeddQ {
@@ -101,7 +110,7 @@ object FeddQ {
     }
   }
 
-  def `new`(name: String) {
+  def `new`(name: String) = {
 
     val expAccess = None
     val expName = Some(Helpers.localname(name))
@@ -111,9 +120,10 @@ object FeddQ {
 
     println(res.experimentStatus)
 
+    res
   }
 
-  def terminate(name: String, force: Option[Boolean] = Some(false)) {
+  def terminate(name: String, force: Option[Boolean] = Some(false)) = {
 
     val expName = Helpers.localname(name)
 
@@ -122,9 +132,17 @@ object FeddQ {
 
     res.deallocationLog.foreach(x => println(x))
 
+    res
   }
 
-  def create(exp: Experiment) {
+  def create(exp: Experiment) = {
+
+    val newRes = `new`(exp.name)
+
+    val proj = CreateServiceInfoType(
+      name="project_export",
+      fedAttr = Seq(FedAttrType("project", "GridStat"))
+    )
 
     val tdl = TopDLGen(exp)
 
@@ -132,25 +150,93 @@ object FeddQ {
       ExperimentDescriptionType(
         DataRecord(None, Some("topdldescription"), tdl))
 
+    val AbacID : Identity = new Identity(new File("/Users/ry/.ssl/emulab.pem"))
+    val ca: Array[Array[Byte]] = Array(Array(),Array())
+    ca(0) = AbacID.getCertificate.getEncoded
+    val fedid =
+      newRes.experimentID.find(x =>
+        x.idtypeoption.key.getOrElse(false) == "fedid").get.idtypeoption.value.toString
+
+
+    val c : X509Credential = Helpers.delegate(AbacID, fedid)
+    ca(1) = c.issuer().getCertificate.getEncoded
+
+    val b64 = Base64Binary(ca.flatten : _*)
+
     val req = CreateRequestType(
       testbedmap = Nil,
       experimentdescription = xpd,
-      service = Nil,
-      Helpers.localname(exp.name),
-      credential = Nil)
+      service = Seq(proj),
+      experimentID = newRes.experimentID.find(x =>
+        x.idtypeoption.key.getOrElse(false) == "localname").get,
+      credential = Seq(b64))
 
     val res = Await.result(svc.create(req), 15 seconds)
 
     println(res.experimentStatus)
+
+    res
   }
 
 }
 
+
 object TopDLGen {
   import generated._
 
-  def apply(exp: Experiment) : TopologyType = {
-    ???
+  def apply(implicit exp: Experiment) : TopologyType = {
+      TopologyType(
+        version = "0",
+        substrates = genSubstrates,
+        elements = genElements,
+        attribute = genAttributes)
   }
+
+  def genSubstrates(implicit exp: Experiment) : Seq[SubstrateType] = {
+    exp.substrates.map(x => {
+      SubstrateType(
+        name = x.name,
+        capacity = Some(CapacityType(rate=1000, kind = Max)),
+        latency = Some(LatencyType(time = 5, kind = Average)),
+        attribute = Seq(),
+        localname = Seq(x.name),
+        status = None,
+        service = Seq(),
+        operation = Seq()
+      )
+    })
+  }
+
+  def genElements(implicit exp: Experiment) : Seq[ElementType] = {
+    exp.computers.map(c => {
+      val ct = ComputerType(
+        name = c.name,
+        cpu = Seq(),
+        os = c.os.map(x => OperatingsystemType(Some(x))),
+        software = c.software.map(x => SoftwareType(x.name)),
+        storage = Seq(),
+        interface = c.interfaces.map(x =>
+          InterfaceType(
+            substrate = x.substrates.toSeq,
+            name = x.name,
+            capacity = Some(CapacityType(rate=1000, kind = Max)),
+            latency = Some(LatencyType(time=5, kind = Average)),
+            attribute = Seq()
+          )
+        ),
+        attribute = Seq(AttributeType("testbed", "deter")),
+        localname = Seq(c.name),
+        status = None,
+        service = Seq(),
+        operation = Seq()
+      )
+      ElementType(DataRecord(None, Some("computer"), ct))
+    })
+  }
+
+  def genAttributes(implicit exp: Experiment) : Seq[AttributeType] = {
+    Seq[AttributeType]()
+  }
+
 
 }
