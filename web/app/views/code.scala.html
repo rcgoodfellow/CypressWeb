@@ -1,0 +1,27 @@
+@(exp: net.deterlab.cypress.model.Experiment)
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>@exp.name::code</title>
+        <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/code.css")" >
+        <link rel="stylesheet" type="text/css" href="@routes.Assets.at("javascripts/codemirror/lib/codemirror.css")" >
+        <link rel="stylesheet" type="text/css" href="@routes.Assets.at("javascripts/codemirror/theme/lesser-dark.css")" >
+        <link rel="stylesheet" type="text/css" href="@routes.Assets.at("javascripts/codemirror/addon/dialog/dialog.css")" >
+        <script type="text/javascript">
+            var expname = "@exp.name";
+        </script>
+        <script src="@routes.Assets.at("javascripts/code.js")"></script>
+        <script src="@routes.Assets.at("javascripts/codemirror/lib/codemirror.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/codemirror/mode/clike/clike.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/codemirror/keymap/vim.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/codemirror/addon/edit/matchbrackets.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/codemirror/addon/dialog/dialog.js")" type="text/javascript"></script>
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")"></script>
+    </head>
+    <body onload="code_onload()">
+        <div id="code"></div>
+        <div id="console"></div>
+    </body>
+</html>
