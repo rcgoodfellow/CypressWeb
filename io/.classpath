@@ -40,6 +40,6 @@
 	<classpathentry kind="lib" path="/Users/ry/.ivy2/cache/net.sf.jung/jung-visualization/jars/jung-visualization-2.0.jar"/>
 	<classpathentry kind="lib" path="/Users/ry/.ivy2/cache/org.bouncycastle/bcprov-jdk16/jars/bcprov-jdk16-1.45.jar"/>
 	<classpathentry kind="lib" path="/Users/ry/.ivy2/cache/org.scalatest/scalatest_2.11/bundles/scalatest_2.11-2.2.2.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

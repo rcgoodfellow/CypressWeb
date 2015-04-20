@@ -10,6 +10,7 @@ import scalaxb.{DataRecord, Soap11Fault, Base64Binary}
 import net.deterlab.cypress.model.Experiment
 import java.io.File
 import scala.util.{Try, Success, Failure}
+import net.deterlab.cypress.model.Experiment
 
 object DataFormatHelpers {
   
@@ -193,7 +194,7 @@ object FeddQ {
       val proj = 
         CreateServiceInfoType(
           name="project_export",
-          fedAttr = Seq(FedAttrType("project", "Cypress")),
+          fedAttr = Seq(FedAttrType("project", "cypress")),
           export = Seq("deter"))
       
       log :+= f"user fedid: ${userFedid.getKeyID}"
@@ -254,10 +255,20 @@ object IFeddQ {
   
   def multiStatus { 
     Await.result(FeddQ.multiStatus, D)
-      .info.foreach { x => showExpInfo(x) }
+      .info.foreach { x => println(showExpInfo(x)) }
   }
   
   def terminate(x: String, force: Boolean = false) {
-    Await.result(FeddQ.terminate(x, force), D)
+    println(Await.result(FeddQ.terminate(x, force), D))
+  }
+  
+  def `new`(x:String) {
+    println(Await.result(FeddQ.`new`(x), D))
+  }
+  
+  def create(x: Experiment) {
+    println(
+        Await.result(FeddQ.create(x), D).toString  
+    )
   }
 }

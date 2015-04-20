@@ -16,7 +16,8 @@ lazy val commonSettings = Seq(
     "-feature", 
     "-language:implicitConversions",
     "-language:postfixOps",
-    "-language:existentials")
+    "-language:existentials"),
+  EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE18)
 )
 
 lazy val commonDeps = Seq(
@@ -26,7 +27,6 @@ lazy val commonDeps = Seq(
 )
     
 
-EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE18)
 
 lazy val model = (project in file("model"))
   .settings(commonSettings: _*)
@@ -46,6 +46,9 @@ lazy val io = (project in file("io"))
     ScalaxbKeys.dispatchVersion in (Compile, ScalaxbKeys.scalaxb) := dispatchV,
     ScalaxbKeys.async in (Compile, ScalaxbKeys.scalaxb) := true,
     ScalaxbKeys.packageName in (Compile, ScalaxbKeys.scalaxb) := "generated",
+    //ScalaxbKeys.paramPrefix in (Compile, ScalaxbKeys.scalaxb) := Some("x"),
+    //ScalaxbKeys.classPrefix in (Compile, ScalaxbKeys.scalaxb) := Some("y"),
+    //ScalaxbKeys.attributePrefix in (Compile, ScalaxbKeys.scalaxb) := Some("x"),
     libraryDependencies ++= commonDeps ++ Seq(
       "org.scala-lang" % "scala-compiler" % "2.11.1",
       "org.scala-lang" % "scala-reflect" % "2.11.1",

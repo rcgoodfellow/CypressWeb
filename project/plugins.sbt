@@ -16,6 +16,8 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
 libraryDependencies += "org.specs2" %% "specs2-core" % "3.5" % "test"
 
+libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.0" % "test"
+
 resolvers += "Typesafe Snapshots" at "https://repo.typesafe.com/typesafe/snapshots/"
 
 
