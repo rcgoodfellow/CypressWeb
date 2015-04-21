@@ -1,18 +1,12 @@
 package fedd
 
-import org.scalatest.FlatSpec
-import net.deterlab.cypress.io.fedd.FeddQ
-import scala.concurrent._
-import scala.concurrent.duration._
-import scala.language.postfixOps
-import org.scalatest.concurrent.ScalaFutures
-import net.deterlab.cypress.io.fedd.DataFormatHelpers._
-import org.scalatest.time.Span
-import org.scalatest.time.Seconds
+import cypress.io.fedd.FeddQ
+import cypress.io.fedd.DataFormatHelpers._
+import cypress.model.{Experiment, Computer}
 import generated._
-import net.deterlab.cypress.model.{Experiment, Computer}
-import scalaxb.Soap11Fault
-import scalaxb.Soap11Fault
+import org.scalatest.FlatSpec
+import org.scalatest.time.{Span,Seconds}
+import org.scalatest.concurrent.ScalaFutures
 
 trait FeddIOTest extends ScalaFutures {
   implicit override val patienceConfig =
@@ -46,8 +40,7 @@ class CreateSpec extends FlatSpec with FeddIOTest {
   "Create" should "start an experiment called abby" in {
     
     val f = FeddQ.create(exp)
-    var tex: Option[Soap11Fault[FaultType]] = None
-    
+
     whenReady(f) {
       x => x.status match {
         case Starting => println(x.dumpString)

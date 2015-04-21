@@ -1,16 +1,13 @@
-package net.deterlab.cypress.io.fedd
+package cypress.io.fedd
 
+import cypress.model.Experiment
 import net.deterlab.abac.{Identity, Context, Role, Credential}
 import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import generated.{IDType, 
-  StatusType, Empty, Active, Inactive, Starting, Terminating, Failed}
+import generated.{ StatusType, Failed}
 import scalaxb.{DataRecord, Soap11Fault, Base64Binary}
-import net.deterlab.cypress.model.Experiment
 import java.io.File
-import scala.util.{Try, Success, Failure}
-import net.deterlab.cypress.model.Experiment
 
 object DataFormatHelpers {
   
@@ -46,8 +43,8 @@ object DataFormatHelpers {
   }
    
   def showExpInfo(trt: TerminateResponseType): String = {
-    var s = "";
-    if(trt.experiment.idtypeoption.key == "fedid") {
+    var s = ""
+    if(trt.experiment.idtypeoption.key.toString == "fedid") {
       s = s + fedid(Seq(trt.experiment))
     }
     else {
@@ -63,7 +60,7 @@ object DataFormatHelpers {
   
   def showSoapFault(sf: Soap11Fault[FaultType]) = {
       var msg = "unkown failure"
-      sf.detail.map(d => {
+      sf.detail.foreach(d => {
         msg = f"${d.desc}%s (${d.code}%d)"
       })
       msg
@@ -167,14 +164,13 @@ object FeddQ {
         info = log ++ Seq(x.deallocationLog.getOrElse(""))
       )
     }).recover({
-      case ex: Soap11Fault[FaultType] => {
+      case ex: Soap11Fault[FaultType] =>
           DeterExpInfo(
           name = name,
           fedid = "",
           status = Failed,
           info = log ++ Seq("terminate failed", showSoapFault(ex))
         )
-      }
     })
   }
   
@@ -225,7 +221,7 @@ object FeddQ {
                 info = log
           )
         })
-        .recover({ case ex: Soap11Fault[FaultType] => {
+        .recover({ case ex: Soap11Fault[FaultType] =>
             log :+= "experiment creation failed"
             log :+= showSoapFault(ex)
             DeterExpInfo(
@@ -234,14 +230,13 @@ object FeddQ {
                 status = Failed,
                 info = log
             )
-          }})
+          })
         .flatMap(y => y.status match {
-          case Failed => {
+          case Failed =>
             log :+= "terminating due to creation failure..."
             terminate(model.name, log=log)
-          }
-          case _ => Future(y)
-          
+          case _ =>
+            Future(y)
         })
     }
   
@@ -253,7 +248,7 @@ object IFeddQ {
   
   val D = Duration(47, SECONDS)
   
-  def multiStatus { 
+  def multiStatus() {
     Await.result(FeddQ.multiStatus, D)
       .info.foreach { x => println(showExpInfo(x)) }
   }

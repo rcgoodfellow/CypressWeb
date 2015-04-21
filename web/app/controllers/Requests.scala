@@ -8,7 +8,7 @@ package controllers.requests
 import play.api.data.Form
 import play.api.data.Forms.{mapping, text, of, list, number}
 import models._
-import net.deterlab.cypress.model._
+import cypress.model._
 import play.api.data.format.Formats._
 
 case class Exp(name: String)

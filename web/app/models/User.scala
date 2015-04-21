@@ -3,14 +3,14 @@ package models
 import play.api.libs.json.Json
 import scala.collection.mutable.{ListBuffer => L}
 //import models.IO._
-import net.deterlab.cypress.model._
+import cypress.model._
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.json.collection.JSONCollection
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 import reactivemongo.api._
 import scala.concurrent.ExecutionContext.Implicits.global
-import net.deterlab.cypress.model.IO._
+import cypress.model.IO._
 
 /**
 *  The Cypress Project

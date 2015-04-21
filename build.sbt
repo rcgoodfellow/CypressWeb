@@ -1,12 +1,13 @@
 
-
+lazy val scalaV = "2.11.6"
 
 lazy val dispatchV = "0.11.2"
+
 
 lazy val commonSettings = Seq(
   organization := "net.deterlab",
   version := "0.1.0",
-  scalaVersion := "2.11.1",
+  scalaVersion := scalaV,
   exportJars := true,
   resolvers ++= Seq(
     "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
@@ -16,17 +17,14 @@ lazy val commonSettings = Seq(
     "-feature", 
     "-language:implicitConversions",
     "-language:postfixOps",
-    "-language:existentials"),
-  EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE18)
+    "-language:existentials")
 )
 
 lazy val commonDeps = Seq(
-  "org.scala-lang" % "scala-library" % "2.11.1",
+  "org.scala-lang" % "scala-library" % scalaV,
   "org.scalatest" % "scalatest_2.11" % "2.2.2" % "test",
   "org.slf4j" % "slf4j-simple" % "1.7.12"
 )
-    
-
 
 lazy val model = (project in file("model"))
   .settings(commonSettings: _*)
@@ -36,8 +34,6 @@ lazy val model = (project in file("model"))
     )
   )
 
-//import ScalaxbKeys._
-
 lazy val io = (project in file("io"))
   .settings(commonSettings: _*)
   .settings(scalaxbSettings : _*)
@@ -46,12 +42,9 @@ lazy val io = (project in file("io"))
     ScalaxbKeys.dispatchVersion in (Compile, ScalaxbKeys.scalaxb) := dispatchV,
     ScalaxbKeys.async in (Compile, ScalaxbKeys.scalaxb) := true,
     ScalaxbKeys.packageName in (Compile, ScalaxbKeys.scalaxb) := "generated",
-    //ScalaxbKeys.paramPrefix in (Compile, ScalaxbKeys.scalaxb) := Some("x"),
-    //ScalaxbKeys.classPrefix in (Compile, ScalaxbKeys.scalaxb) := Some("y"),
-    //ScalaxbKeys.attributePrefix in (Compile, ScalaxbKeys.scalaxb) := Some("x"),
     libraryDependencies ++= commonDeps ++ Seq(
-      "org.scala-lang" % "scala-compiler" % "2.11.1",
-      "org.scala-lang" % "scala-reflect" % "2.11.1",
+      "org.scala-lang" % "scala-compiler" % scalaV,
+      "org.scala-lang" % "scala-reflect" % scalaV,
       "org.scala-lang.modules" %% "scala-xml" % "1.0.2",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
       "net.databinder.dispatch" %% "dispatch-core" % dispatchV,
@@ -64,20 +57,15 @@ lazy val web = (project in file("web"))
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    //autoScalaLibrary := false,
-  )
-  .settings(
     libraryDependencies ++= Seq(
       jdbc, cache, ws,
-      "org.scala-lang" % "scala-library" % "2.11.1",
-      "org.scala-lang" % "scala-compiler" % "2.11.1",
-      "org.scala-lang" % "scala-reflect" % "2.11.1",
+      "org.scala-lang" % "scala-library" % scalaV,
+      "org.scala-lang" % "scala-compiler" % scalaV,
+      "org.scala-lang" % "scala-reflect" % scalaV,
       "org.reactivemongo" %% "reactivemongo" % "0.10.5.0.akka23",
       "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.0.akka23",
       "org.slf4j" % "slf4j-simple" % "1.7.12"
-    ),
-    EclipseKeys.skipParents in ThisBuild := false,
-    EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Managed
+    )
   )
   .dependsOn(io, model)
 

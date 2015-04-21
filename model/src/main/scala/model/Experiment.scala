@@ -1,4 +1,4 @@
-package net.deterlab.cypress.model
+package cypress.model
 
 /**
  * The Cypress Project

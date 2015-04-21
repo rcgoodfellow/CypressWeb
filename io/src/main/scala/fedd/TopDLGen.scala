@@ -1,6 +1,6 @@
-package net.deterlab.cypress.io.fedd
+package cypress.io.fedd
 
-import net.deterlab.cypress.model.Experiment
+import cypress.model.Experiment
 import scalaxb.DataRecord
 
 object TopDLGen {
@@ -46,7 +46,10 @@ object TopDLGen {
             attribute = Seq()
           )
         ),
-        attribute = Seq(AttributeType("testbed", "deter")),
+        attribute = Seq(
+          AttributeType("testbed", "deter"),
+          AttributeType("startup", "/proj/cypress/software/java/install.sh")
+        ),
         localname = Seq(c.name),
         status = None,
         service = Seq(),

@@ -1,18 +1,16 @@
 package controllers
 
-import java.io.{ByteArrayOutputStream, File}
-
-import akka.actor.ActorRef
-import play.api.mvc._
 import models._
 import javax.script.{ScriptException, ScriptEngineManager}
+import cypress.model._
+import cypress.model.IO._
 import requests.Forms._
-import play.api.libs.json._
-//import models.IO._
-import net.deterlab.cypress.model._
-import net.deterlab.cypress.model.IO._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.Play.current
+import play.api.libs.json._
+import play.api.mvc._
+import akka.actor.ActorRef
+import java.io.{ByteArrayOutputStream, File}
 
 import scala.concurrent.Future
 
@@ -113,27 +111,16 @@ object Application extends play.api.mvc.Controller {
 
   private val E = new ScriptEngineManager().getEngineByName("scala")
   private val settings = E.asInstanceOf[scala.tools.nsc.interpreter.IMain].settings
-  
-  //scala.tools.util.PathResolver.Environment.javaBootClassPath +
-  //File.pathSeparator + "target/scala-2.11/web_2.11-0.1.0.jar"
-  //System.getProperty("user.dir") +
-  
+
   private val cp = 
     scala.tools.util.PathResolver.Environment.javaBootClassPath +
-    File.pathSeparator + "web/lib/scala-library-2.11.1.jar" +
+    File.pathSeparator + "web/lib/scala-library-2.11.6.jar" +
     File.pathSeparator + "model/target/scala-2.11/model_2.11-0.1.0.jar" +
     File.pathSeparator + "io/target/scala-2.11/io_2.11-0.1.0.jar" +
     File.pathSeparator + "web/target/scala-2.11/web_2.11-0.1.0.jar"
       
-  //println("USERLIB:")
-  //println(System.getProperty("user.dir"))
-  //println("CLASSPATH:")
-  //println(cp)
-      
-  //settings.classpath.value = cp
   settings.bootclasspath.value = cp
   settings.embeddedDefaults[Thing]
-  //settings.usejavacp.value = true
   private val ctx = E.getContext
   E.eval("import net.deterlab.cypress.model._", ctx)
   E.eval("import scala.collection.mutable.{ListBuffer => L}", ctx)
@@ -147,8 +134,6 @@ object Application extends play.api.mvc.Controller {
     val exp = db.get.experiments.find(x => x.name == form.get.exp).get
     E.put("_exp", exp)
     E.eval("val exp = _exp.asInstanceOf[Experiment]", ctx)
-
-    //boom.foreach(BoomSocketActor.shakalaka)
 
     val baos = new ByteArrayOutputStream
     Console.withOut(baos) {
@@ -195,7 +180,7 @@ object Application extends play.api.mvc.Controller {
     }
   }
 
-  def updateXY = Action { implicit request =>
+  def updateXY() = Action { implicit request =>
 
     val user = request.session.get("user").get
     val vup = Json.fromJson[VisualUpdate](request.body.asJson.get).get
