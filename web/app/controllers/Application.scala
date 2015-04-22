@@ -1,9 +1,11 @@
 package controllers
 
+
 import models._
 import javax.script.{ScriptException, ScriptEngineManager}
 import cypress.model._
 import cypress.model.IO._
+import org.apache.commons.io.output.NullOutputStream
 import requests.Forms._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.Play.current
@@ -122,7 +124,7 @@ object Application extends play.api.mvc.Controller {
   settings.bootclasspath.value = cp
   settings.embeddedDefaults[Thing]
   private val ctx = E.getContext
-  E.eval("import net.deterlab.cypress.model._", ctx)
+  E.eval("import cypress.model._", ctx)
   E.eval("import scala.collection.mutable.{ListBuffer => L}", ctx)
 
   def eval = Action { implicit request =>
@@ -132,7 +134,7 @@ object Application extends play.api.mvc.Controller {
 
     val src = form.get.source + ";"
     val exp = db.get.experiments.find(x => x.name == form.get.exp).get
-    E.put("_exp", exp)
+    Console.withOut(new NullOutputStream){ E.put("_exp", exp) }
     E.eval("val exp = _exp.asInstanceOf[Experiment]", ctx)
 
     val baos = new ByteArrayOutputStream

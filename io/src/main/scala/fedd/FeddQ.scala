@@ -262,8 +262,6 @@ object IFeddQ {
   }
   
   def create(x: Experiment) {
-    println(
-        Await.result(FeddQ.create(x), D).toString  
-    )
+    println(Await.result(FeddQ.create(x), D).toString)
   }
 }

@@ -58,14 +58,27 @@ lazy val web = (project in file("web"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      jdbc, cache, ws,
+      jdbc, cache, ws, anorm,
       "org.scala-lang" % "scala-library" % scalaV,
       "org.scala-lang" % "scala-compiler" % scalaV,
       "org.scala-lang" % "scala-reflect" % scalaV,
       "org.reactivemongo" %% "reactivemongo" % "0.10.5.0.akka23",
       "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.0.akka23",
-      "org.slf4j" % "slf4j-simple" % "1.7.12"
+      "org.slf4j" % "slf4j-simple" % "1.7.12",
+      "commons-io" % "commons-io" % "2.4"
     )
   )
   .dependsOn(io, model)
+
+lazy val control = (project in file("control"))
+  .settings(commonSettings: _*)
+  .settings(
+    resolvers ++= Seq(
+      "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
+    ),
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT",
+      "org.scala-lang.modules" %% "scala-pickling" % "0.10.0"
+    )
+  )
 
