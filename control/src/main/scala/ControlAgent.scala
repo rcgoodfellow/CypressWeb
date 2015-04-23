@@ -4,7 +4,7 @@ import java.net._
 import java.nio.channels.DatagramChannel
 import akka.actor.{ActorRef, Actor}
 import akka.io.Inet.{DatagramChannelCreator, SocketOption}
-import akka.io.{UdpConnected, Udp, IO}
+import akka.io.{Udp, IO}
 import akka.util.{ByteString}
 import scala.pickling.{Unpickler, Pickler}
 
@@ -80,7 +80,7 @@ abstract class ControlAgent extends Actor {
   private var sock: Option[ActorRef] = None
   private var ssock: Option[ActorRef] = None
   val group = "ff02::C3A0:3EAC"
-  val iface = "en1"
+  val iface = "eth4"
   val multicast = new InetSocketAddress(s"$group%$iface", 4074)
   val myaddr = new InetSocketAddress("localhost", 7047)
   lazy val id = getClass.getName.hashCode
