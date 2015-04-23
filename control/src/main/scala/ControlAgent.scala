@@ -24,10 +24,10 @@ trait Tx[A<:Pub]{
   val x: A
 }
 
-final case class MulticastGroup(address: String) extends SocketOption {
+final case class MulticastGroup(address: String, iface: String) extends SocketOption {
   override def afterConnect(c: DatagramChannel): Unit = {
     val group = InetAddress.getByName(address)
-    val networkInterface = NetworkInterface.getByName("en0")
+    val networkInterface = NetworkInterface.getByName(iface)
     c.setOption[java.lang.Boolean](StandardSocketOptions.IP_MULTICAST_LOOP, true)
     c.join(group, networkInterface)
   }
@@ -79,8 +79,8 @@ abstract class ControlAgent extends Actor {
   import context.system
   private var sock: Option[ActorRef] = None
   private var ssock: Option[ActorRef] = None
-  val group = "ff02::47"
-  val iface = "en0"
+  val group = "ff02::C3A0:3EAC"
+  val iface = "en1"
   val multicast = new InetSocketAddress(s"$group%$iface", 4074)
   val myaddr = new InetSocketAddress("localhost", 7047)
   lazy val id = getClass.getName.hashCode
@@ -89,7 +89,7 @@ abstract class ControlAgent extends Actor {
   import BasePicklers._
 
   val opts = List(
-    MulticastGroup("ff02::47"),
+    MulticastGroup(group, iface),
     Inet6ProtocolFamily(),
     Udp.SO.ReuseAddress(on=true)
   )
