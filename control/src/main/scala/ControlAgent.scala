@@ -1,13 +1,13 @@
 package cypress.control
 
-import java.net.InetSocketAddress
-import java.nio.ByteBuffer
-
+import java.net._
+import java.nio.channels.DatagramChannel
 import akka.actor.{ActorRef, Actor}
-import akka.io.{Udp, IO}
-import akka.util.{ByteStringBuilder, ByteString}
+import akka.io.Inet.{DatagramChannelCreator, SocketOption}
+import akka.io.{UdpConnected, Udp, IO}
+import akka.util.{ByteString}
+import scala.pickling.{Unpickler, Pickler}
 
-import scala.pickling.binary.BinaryPickle
 
 /**
  * The Cypress Project
@@ -17,88 +17,109 @@ import scala.pickling.binary.BinaryPickle
 sealed trait Pub extends {
   type HashCode = Int
   val topic: HashCode
-  val typecode: HashCode
+  val sender: HashCode
 }
 
-sealed trait ShapeShifter[A<:Pub]{
-  def shs(x: ByteString) : A
-  def shs(x: A) : ByteString
+trait Tx[A<:Pub]{
+  val x: A
 }
 
-case class DoublePub(topic: Int, x: Double) extends Pub {
-  val typecode = DoublePub.typeid
+final case class MulticastGroup(address: String) extends SocketOption {
+  override def afterConnect(c: DatagramChannel): Unit = {
+    val group = InetAddress.getByName(address)
+    val networkInterface = NetworkInterface.getByName("en0")
+    c.setOption[java.lang.Boolean](StandardSocketOptions.IP_MULTICAST_LOOP, true)
+    c.join(group, networkInterface)
+  }
 }
-object DoublePub { val typeid = "DoublePub".hashCode }
 
-case class IntPub(topic: Int, x: Int) extends Pub {
-  val typecode = DoublePub.typeid
+final case class Inet6ProtocolFamily() extends DatagramChannelCreator {
+  override def create() = {
+    val dc = DatagramChannel.open(StandardProtocolFamily.INET6)
+    dc.setOption[java.lang.Boolean](StandardSocketOptions.IP_MULTICAST_LOOP, true)
+    dc
+  }
 }
-object IntPub { val typeid = "IntPub".hashCode }
 
-object ShapeShifters {
+case class DoublePub(sender: Int, topic: Int, x: Double) extends Pub
+case class DoublePubTx(x: DoublePub) extends Tx[DoublePub]
+
+case class IntPub(sender: Int, topic: Int, x: Int) extends Pub
+case class IntPubTx(x: DoublePub) extends Tx[DoublePub]
+
+class ShapeShifter[+A<:Pub]{
 
   import scala.pickling.Defaults._, scala.pickling.binary._
 
-  object DblPubSS extends ShapeShifter[DoublePub]{
-    def shs(x: ByteString): DoublePub = {
-      BinaryPickle(x.toArray).unpickle[DoublePub]
-    }
-    def shs(x: DoublePub): ByteString = {
-      ByteString(x.pickle.value)
-    }
+  def fromBytes[B >: A](x: ByteString)(implicit pickler: Unpickler[B]) : B = {
+    BinaryPickle(x.toArray).unpickle[B]
   }
-
-  val a = DblPubSS
-
-  object IntPubSS extends ShapeShifter[IntPub]{
-    def shs(x: ByteString): IntPub = {
-      BinaryPickle(x.toArray).unpickle[IntPub]
-    }
-    def shs(x: IntPub): ByteString = {
-      ByteString(x.pickle.value)
-    }
+  def toBytes[B >: A](x: B)(implicit pickler: Pickler[B]) : ByteString = {
+    ByteString(x.pickle.value)
   }
 
 }
 
-trait BaseShapes {
-  type HashCode = Int
-  protected var shapes = Map(
-    DoublePub.typeid -> ShapeShifters.DblPubSS,
-    IntPub.typeid -> ShapeShifters.IntPubSS
-  )
-
+object BasePicklers {
+  import scala.pickling.Defaults._, scala.pickling.binary._
+  implicit val pk = Pickler.generate[Pub]
+  implicit val ipk = Pickler.generate[IntPub]
+  implicit val dpk = Pickler.generate[DoublePub]
+  implicit val upk = Unpickler.generate[Pub]
+  implicit val uipk = Unpickler.generate[IntPub]
+  implicit val udpk = Unpickler.generate[DoublePub]
 }
 
 object util {
   def p(id: String): Int = id.hashCode
 }
 
-trait ControlAgent {
-  def rx : PartialFunction[Pub,Unit]
-}
 
-abstract class ControlNode extends Actor with ControlAgent with BaseShapes {
+abstract class ControlAgent extends Actor {
   import context.system
   private var sock: Option[ActorRef] = None
-  val multicast = new InetSocketAddress("multicast", 4074)
+  private var ssock: Option[ActorRef] = None
+  val group = "ff02::47"
+  val iface = "en0"
+  val multicast = new InetSocketAddress(s"$group%$iface", 4074)
+  val myaddr = new InetSocketAddress("localhost", 7047)
+  lazy val id = getClass.getName.hashCode
+  def rx : PartialFunction[Any,Unit]
 
-  IO(Udp) ! Udp.Bind(self, new InetSocketAddress("localhost", 0))
+  import BasePicklers._
+
+  val opts = List(
+    MulticastGroup("ff02::47"),
+    Inet6ProtocolFamily(),
+    Udp.SO.ReuseAddress(on=true)
+  )
+
+  //IO(Udp) ! Udp.Bind(self, myaddr)
+  IO(Udp) ! Udp.Bind(self, new InetSocketAddress(4074), opts)
+  IO(Udp) ! Udp.SimpleSender(List(Inet6ProtocolFamily()))
 
   def receive = {
     case Udp.Bound(local) =>
       sock = Some(sender())
-      context.become(ready(sender())) }
 
-  def ready(sock: ActorRef) : Receive = {
+    case Udp.SimpleSenderReady =>
+      ssock = Some(sender())
 
     case Udp.Received(data, remote) =>
-      val id_tag = ByteBuffer.wrap(data.toArray.slice(0,4)).getInt
-      val ss = shapes(id_tag)
-      rx(ss.shs(data))
+      val ss = new ShapeShifter[Pub]
+      val p = ss.fromBytes(data)
+      rx(ss.fromBytes(data))
 
-    case Udp.Unbind => sock ! Udp.Unbind
+    case Udp.Unbind => sock.foreach(_ ! Udp.Unbind)
     case Udp.Unbound => context.stop(self)
+    case x:Tx[Any] => rx(x)
+  }
+
+
+  def tx[A<:Pub](x: A) : Unit = {
+    val ss = new ShapeShifter[Pub]
+    val bits = ss.toBytes(x)
+    ssock.foreach(_ ! Udp.Send(bits, multicast))
   }
 
 }
