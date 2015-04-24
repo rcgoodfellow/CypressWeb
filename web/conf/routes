@@ -25,3 +25,5 @@ POST        /eval                controllers.Application.eval
 POST        /updateXY            controllers.Application.updateXY
 
 GET         /ws                  controllers.Application.ws
+
+GET         /ucontrollers         controllers.Application.ucontrollers

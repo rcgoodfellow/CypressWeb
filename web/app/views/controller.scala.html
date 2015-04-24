@@ -1,0 +1,8 @@
+@(cs: List[cypress.model.Controller])
+
+@for(c <- cs) {
+    <div class="controller">
+        <svg width="20" height="20"><polygon points="0,0 20,0 10,20" style="fill : @c.color;" ></polygon></svg>
+        <span class="cname">@c.name</span>
+    </div>
+}

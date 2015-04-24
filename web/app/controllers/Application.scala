@@ -111,6 +111,16 @@ object Application extends play.api.mvc.Controller {
 
   }
 
+  def ucontrollers = Action { implicit request =>
+
+    val user = request.session.get("user").get
+
+    //db.get.controllers.find()
+
+    Ok(views.html.controller(???))
+  }
+
+
   private val E = new ScriptEngineManager().getEngineByName("scala")
   private val settings = E.asInstanceOf[scala.tools.nsc.interpreter.IMain].settings
 

@@ -64,9 +64,9 @@ object GenericSoftware {
 
 
 case class Controller (
-  var name: String,
-  in: L[String], out: L[String],
-  cg: CodeGen
+  var name: String, var color: String//,
+  //in: L[String], out: L[String],
+  //cg: CodeGen
 ) extends Software {
 
   

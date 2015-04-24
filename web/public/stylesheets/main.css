@@ -205,3 +205,63 @@ td {
     right: 0px;
     cursor: default;
 }
+
+#control_panel {
+    position: absolute;
+
+    left: 10px;
+    top: 70px;
+
+    /*width: 200px;
+    height: 500px;*/
+
+    max-width: 200px;
+    max-height: 700px;
+
+    background: rgba(116, 116, 116, 0.6);
+    border: 2px solid #ddd;
+
+    padding: 5px;
+}
+
+.controller {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 5px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+#control_panel .cname {
+    display: inline-block;
+    color: #fff;
+    margin-left: 5px;
+}
+
+.control_mod {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.control_mod span {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+.mod_btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-size: large;
+    width: 20px;
+    height: 20px;
+}
+

@@ -94,7 +94,6 @@ abstract class ControlAgent extends Actor {
     Udp.SO.ReuseAddress(on=true)
   )
 
-  //IO(Udp) ! Udp.Bind(self, myaddr)
   IO(Udp) ! Udp.Bind(self, new InetSocketAddress(4074), opts)
   IO(Udp) ! Udp.SimpleSender(List(Inet6ProtocolFamily()))
 

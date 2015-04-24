@@ -50,6 +50,14 @@ function newExpKeyPrH(evt) {
     }
 }
 
+function loadControllers() {
+    $(".controllers").append(
+        "<div class='controller'>" +
+            '<svg width="20" height="20"><polygon points="0,0 20,0 10,20" style="fill: #cc5750" ></polygon></svg>'+
+            '<span class="cname">Mr. Anderson</span>'+
+        '</div>')
+}
+
 function goDesign(name) {
     $(".navlink_selected").removeClass("navlink_selected");
     $("#nav_design")
@@ -64,6 +72,7 @@ function goDesign(name) {
     $.get("designer", {name: name},
         function(data) {
             $("#main_content").html(data);
+            loadControllers();
             if(!codeWindows[name]) {
                 openCodeWindow(name);
             }
