@@ -1,13 +1,12 @@
 package models
 
-import reactivemongo.bson.{BSONDocument, BSONInteger, BSONValue}
-import reactivemongo.core.commands.{Project, Unwind, Aggregate}
-import play.modules.reactivemongo.json.BSONFormats.toJSON
-
+import reactivemongo.bson.{BSONDocument, BSONInteger}
+import reactivemongo.core.commands.{Project, Aggregate}
+import play.modules.reactivemongo.json.BSONFormats._
 
 import scala.collection.mutable.{ListBuffer => L}
 import cypress.model._
-import play.api.libs.json.{Json}
+import play.api.libs.json.Json
 import play.modules.reactivemongo.json.collection.JSONCollection
 import scala.concurrent.Future
 import reactivemongo.api._
@@ -38,74 +37,33 @@ case class DB(username: String) {
     collection.update(selector=sel, update=uppd, upsert=true)
   }
 
-  //val loadExp()
+  def loadExp : Future[DB] = {
+    val cmd = Aggregate(username, Seq(Project("experiments" -> BSONInteger(1))))
+
+    val expExtractor = { x:Stream[BSONDocument] =>
+      Json.fromJson[List[Experiment]](Json.toJson(x.head) \ "experiments").get
+    }
+
+    val populateExperiments = { x:List[Experiment] =>
+      x.foreach(xp => experiments += xp)
+      experiments foreach {
+        _.views foreach { v =>
+          v.exp = experiments.collectFirst({case xp if xp.name == v.expname => xp})
+        }
+      }
+      this
+    }
+
+    db.command(cmd)
+      .map(expExtractor)
+      .map(populateExperiments)
+  }
 
   def load() : Future[DB] = {
     experiments.clear()
-    val sel = Json.obj()
-    val proj = Json.obj("experiments" -> 1)
-    val cmd = Aggregate(username, Seq(
-      Project("experiments" -> BSONInteger(1))
-    ))
-    import play.modules.reactivemongo.json.BSONFormats._
-    val barf =
-      db.command(cmd).map(x => {
-        val xl = x.toList
-        val jxl = Json.toJson(xl(0))
-        val abc = jxl \ "experiments"
-        val efg = Json.fromJson[List[Experiment]](abc)
-        efg.foreach(j => println(j))
-        efg
-        //abc.map(y => Json.fromJson[Experiment](y))
-      }).map(z => {
-        println(z)
-        z.foreach(xz => xz.map(xxpp => experiments += xxpp))
-        experiments foreach { xp => //attach views to experiment instances
-          xp.views foreach { v =>
-            experiments.find(y => y.name == v.expname).foreach(res => v.exp = Some(res))
-          }
-        }
-        this
-      })
-
-    /*
-    val fexp =
-      collection.find(sel, proj).cursor[Experiment].collect[List]().
-      //db.command(cmd).cursor[Experiment].collect[List]().
-       map(x => {
-          experiments ++= x
-          experiments foreach { xp => //attach views to experiment instances
-           xp.views foreach { v =>
-             experiments.find(y => y.name == v.expname).foreach(res => v.exp = Some(res))
-           }
-          }
-          this
-       })
-    fexp
-    */
-
-    barf
-
+    loadExp
   }
 }
 
-case class User(name: String, password: String) {
+case class User(name: String, password: String)
 
-  /*
-  def experiments : List[Experiment] = {
-    val exps = DB.users.get(name)
-
-    exps match {
-      case Some(value) => value.toList
-      case None => List()
-    }
-
-    //List(
-      //Experiment("Asilomar"),
-      //Experiment("del Monte"),
-      //Experiment("Forest Grove")
-    //)
-  }
-*/
-
-}
