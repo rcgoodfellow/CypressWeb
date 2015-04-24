@@ -51,11 +51,19 @@ function newExpKeyPrH(evt) {
 }
 
 function loadControllers() {
+
+    $.get("ucontrollers", function(data) {
+      $(".controllers").append(
+        data
+      )
+    });
+    /*
     $(".controllers").append(
         "<div class='controller'>" +
             '<svg width="20" height="20"><polygon points="0,0 20,0 10,20" style="fill: #cc5750" ></polygon></svg>'+
             '<span class="cname">Mr. Anderson</span>'+
         '</div>')
+        */
 }
 
 function goDesign(name) {

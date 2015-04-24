@@ -28,13 +28,36 @@ case class DB(username: String) {
   private val db = connection("cypress_users")
   private val collection = db[JSONCollection](username)
 
-  def saveAll(): Unit = experiments foreach save
+  def saveAll(): Unit = {
+    experiments foreach saveExp
+    controllers foreach saveController
+  }
 
-  def save(exp: Experiment): Unit = {
+  def saveExp(exp: Experiment): Unit = {
     val sel = Json.obj("experiments.name" -> exp.name)
-    val jexp = Json.toJson(exp)
-    val uppd = Json.obj("$set" -> Json.obj("experiments.$" -> jexp))
-    collection.update(selector=sel, update=uppd, upsert=true)
+    val update = Json.obj("$set" -> Json.obj("experiments.$" -> Json.toJson(exp)))
+    collection.update(selector=sel, update=update, upsert=true)
+  }
+
+  def saveController(ct: Controller): Unit = {
+    //val sel = Json.obj("controllers.name" -> ct.name)
+    //val update = Json.obj("$set" -> Json.obj("controllers.$" -> Json.toJson(ct)))
+    //println("bongo-mongo")
+    //println(update)
+    //collection.update(selector=sel, update=update, upsert=true)
+
+    val sel = Json.obj()
+    val pull =
+      Json.obj("$pull" ->
+        Json.obj("controllers" -> Json.obj("name" -> ct.name))
+      )
+    collection.update(selector=sel, update=pull)
+
+    val push =
+      Json.obj("$push" ->
+        Json.obj("controllers" -> ct)
+      )
+    collection.update(selector=sel, update=push)
   }
 
   def loadExp : Future[DB] = {
@@ -59,9 +82,26 @@ case class DB(username: String) {
       .map(populateExperiments)
   }
 
+  def loadControls : Future[DB] = {
+    val cmd = Aggregate(username, Seq(Project("controllers" -> BSONInteger(1))))
+
+    val ctrlExtratctor = { x:Stream[BSONDocument] =>
+      Json.fromJson[List[Controller]](Json.toJson(x.head) \ "controllers").get
+    }
+
+    val populateControls = { x:List[Controller] =>
+      x.foreach(ct => controllers += ct)
+      this
+    }
+
+    db.command(cmd)
+      .map(ctrlExtratctor)
+      .map(populateControls)
+  }
+
   def load() : Future[DB] = {
     experiments.clear()
-    loadExp
+    loadExp.flatMap(_ => loadControls)
   }
 }
 

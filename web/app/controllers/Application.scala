@@ -115,9 +115,7 @@ object Application extends play.api.mvc.Controller {
 
     val user = request.session.get("user").get
 
-    //db.get.controllers.find()
-
-    Ok(views.html.controller(???))
+    Ok(views.html.controller(db.get.controllers.toList))
   }
 
 
@@ -127,7 +125,8 @@ object Application extends play.api.mvc.Controller {
   private val cp = 
     scala.tools.util.PathResolver.Environment.javaBootClassPath +
     File.pathSeparator + "web/lib/scala-library-2.11.6.jar" +
-    File.pathSeparator + "model/target/scala-2.11/model_2.11-0.1.0.jar" +
+    //File.pathSeparator + "model/target/scala-2.11/model_2.11-0.1.0.jar" +
+    File.pathSeparator + "model/target/scala-2.11/model-assembly-0.1.0.jar" +
     File.pathSeparator + "io/target/scala-2.11/io_2.11-0.1.0.jar" +
     File.pathSeparator + "web/target/scala-2.11/web_2.11-0.1.0.jar"
       
@@ -144,28 +143,37 @@ object Application extends play.api.mvc.Controller {
 
     val src = form.get.source + ";"
     val exp = db.get.experiments.find(x => x.name == form.get.exp).get
-    Console.withOut(new NullOutputStream){ E.put("_exp", exp) }
+    val controls = db.get.controllers
+    Console.withOut(new NullOutputStream){
+      E.put("_exp", exp)
+      E.put("_controls", controls)
+    }
     E.eval("val exp = _exp.asInstanceOf[Experiment]", ctx)
+    E.eval("val controls = _controls.asInstanceOf[L[Controller]]", ctx)
 
+    var result = Ok(":(")
     val baos = new ByteArrayOutputStream
     Console.withOut(baos) {
       try {
         val eval_result = E.eval(src, ctx)
         if (eval_result != null) {
-          db.get.save(exp)
-          boom.foreach(ak => ak ! Json.toJson(exp.views(0))(expViewClientWrites))
-          Ok(eval_result.toString)
+          //db.get.saveExp(exp)
+          db.get.saveAll()
+          boom.foreach(ak => ak ! Json.toJson(exp.views.head)(expViewClientWrites))
+          result = Ok(eval_result.toString)
         }
         else {
-          Ok(baos.toString("UTF-8"))
+          db.get.saveAll()
+          result = Ok(baos.toString("UTF-8"))
         }
       }
       catch {
         case ex: ScriptException =>
-          Ok(baos.toString("UTF-8"))
+          result = Ok(baos.toString("UTF-8"))
       }
     }
-
+    println(baos.toString("UTF-8"))
+    result
   }
 
   def findExpObject(o: PathElement, os: List[PathElement], exp: Experiment)
@@ -204,7 +212,7 @@ object Application extends play.api.mvc.Controller {
     vobj.xy.x = vup.x
     vobj.xy.y = vup.y
 
-    db.get.save(exp)
+    db.get.saveExp(exp)
 
     Ok("")
   }
